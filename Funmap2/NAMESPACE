@@ -1,0 +1,33 @@
+import(mvtnorm)
+import(parallel)
+import(graphics)
+import(grDevices)
+import(methods)
+import(stats)
+import(utils)
+
+export(cur)
+export(FM2.pipe)
+export(FM2.simu.pipe)
+
+export(FM2.report)
+export(FM2.simulate)
+export(FM2.estimate.data)
+export(FM2.load.data)
+export(FM2.qtlscan)
+export(FM2.permutation)
+export(FM2.select.qtl)
+export(FM2.get.curve)
+export(FM2.get.covariance)
+
+S3method(print, FM2.dat)
+S3method(summary, FM2.dat)
+S3method(plot, FM2.dat)
+S3method(print, FM2.qtl.mle)
+S3method(summary, FM2.qtl.mle)
+S3method(plot, FM2.qtl.mle)
+S3method(print, FM2.qtl.mle.perm)
+S3method(summary, FM2.qtl.mle.perm)
+S3method(plot, FM2.qtl.mle.perm)
+
+

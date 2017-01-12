@@ -1,0 +1,12 @@
+Package: Funmap2
+Version: 2.4
+Date: 17 Jan 2017
+Title: Functional mapping methods for QTL mapping
+Author: The Center for Computational Biolog at Beijing Forestry University, China
+Maintainer: Zhong Wang <wzhy2000@hotmail.com>
+Description: Analysis of experimental crosses to identify genes (called quantitative trait loci, QTLs) contributing to variation in longitudinal quantitative traits.
+Depends: R (>= 2.4.0), mvtnorm, parallel, graphics, grDevices, methods, stats, utils
+License: GPL-3
+ZipData: yes
+URL: https://github.com/wzhy2000/Funmap2
+Packaged: 2017-1-11 00:15:41 UTC; zwang

@@ -1,0 +1,37 @@
+\name{FM2.get.cross}
+\alias{FM2.get.cross}
+
+\title{Retriving the cross object.}
+
+\description{ 
+Retrive a cross object from 3 options: backcross , F2 or RIL intercross.
+} 
+
+\usage{ FM2.get.cross(cross.type) }
+
+\arguments{
+
+\item{cross.type}{string value indicating which cross is returned, 3 optional values are available.\cr
+"BC" : backcross.\cr
+"F2": F2 intercross.\cr
+"RIL": RIL by selfing.}
+
+}
+
+\value{
+
+This function returns a S3 object to use as cross object.
+}
+
+\details{
+ }
+
+\examples{
+
+cross <- FM2.get.cross("RIL");
+cross;
+show(cross);
+
+}
+
+\keyword{Cross}
