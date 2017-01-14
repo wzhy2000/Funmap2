@@ -12,7 +12,7 @@ The Funmap2 package is developed to identify quantitative trait loci (QTL) for a
 
 ## Document
 
-> 1) Vinegette (https://github.com/wzhy2000/Funmap2/blob/master/Funmap2-manual.pdf)
+> 1) Vignette (https://github.com/wzhy2000/Funmap2/blob/master/Funmap2-manual.pdf)
 
 > 2) Manual (https://github.com/wzhy2000/Funmap2/blob/master/Funmap2-manual.pdf)
 
