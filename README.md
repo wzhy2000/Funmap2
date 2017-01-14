@@ -1,7 +1,6 @@
-# Funmap2
+# Funmap2 (Version 2.4)
 
-Functional Mapping Package for R (Version 2.4)
-Funmap2 is an R program that performs QTL mapping between a set of markers and a longitudinal quantitative trait in population samples. 
+Functional Mapping Package, is an R program that performs QTL mapping between a set of markers and a longitudinal quantitative trait in population samples. 
 
 # Reference
 
@@ -10,6 +9,12 @@ Funmap2 is an R program that performs QTL mapping between a set of markers and a
 ## Abstract:
 
 The Funmap package is developed to identify quantitative trait loci (QTL) for a longitudinal, or vectorized, phenotypic trait as based on the Funmap model[1]. Version 2.4 has implemented 9 functional curves( Logistic Curve, Bi-Exponential Curve, Pharmacology Curve, Nonparametric method, Exponentiation Curve) , 13 covariance structures and 3 cross types (backcross, F2 cross and RILs by selfing). the Function FM2.pipe is the easiest way to call the computational model by five arguments of the phenotype file, the genotype file, the marker file, the cross type and the curve type. The computational model automatically performs the hypothesis tests and permutation. The package can output a brief report for the raw data, results of the QTL scanning and permutation results. For some results, figures will be outputted to a PDF file and a Rdata file will be generated. For more details, please refer to the document. 
+
+## Document
+
+> 1) Vinegette (https://github.com/wzhy2000/Funmap2/blob/master/manual.pdf)
+
+> 2) Manual (https://github.com/wzhy2000/Funmap2/blob/master/manual.pdf)
 
 ## Installation Instructions:
 
