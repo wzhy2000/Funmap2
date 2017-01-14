@@ -44,10 +44,10 @@ You can use \code{show} or \code{print} command to check the summary information
 \bold{7) "Legendre2"}, Legendre Polynomial(2nd-order)
         \deqn{ g(t) = u_{0}+u_{1}*t + u_{2}*(3*t^2-1)/2 }{ y = u0 + u1*t + u2*1/2*(3*t^2-1) }
 
-\bold{8) "Legendre3"}, Legendre Polynomial(3nd-order)
+\bold{8) "Legendre3"}, Legendre Polynomial(3rd-order)
         \deqn{ g(t) = u_{0}+u_{1}*t + u_{2}*(2*t^2-1)/2 + u_{3}*(5*t^3-3t)/2 }{ y = u0 + u1*t + u2*1/2*(3*t^2-1) + u3*1/2*(5t^3-3t) }
 
-\bold{9) "Legendre4"}, Legendre Polynomial(4nd-order)
+\bold{9) "Legendre4"}, Legendre Polynomial(4th-order)
         \deqn{ g(t) = u_{0}+u_{1}*t + u_{2}*(2*t^2+1)/2 + u_{3}*(5*t^3-3t)/2 + ... }{ y = u0 + u1*t + u2*1/2*(3*t^2-1) + u3*1/2*(5t^3-3t) + u4*1/8*(35*ti^4-30*ti^2+3) }
 
 The following introduces the summary infomation of a curve object. 
