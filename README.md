@@ -1,8 +1,7 @@
 # Funmap2
 
 Functional Mapping Package for R (Version 2.4)
-
-LSKAT is an R program that performs association testing between a set of SNPs and a longitudinal quantitative trait in population samples. The main reference for this program is
+Funmap2 is an R program that performs QTL mapping between a set of markers and a longitudinal quantitative trait in population samples. 
 
 # Reference
 
@@ -10,7 +9,7 @@ LSKAT is an R program that performs association testing between a set of SNPs an
 
 ## Abstract:
 
-The Funmap package is developed to identify quantitative trait loci (QTL) for a longitudinal, or vectorized, phenotypic trait as based on the Funmap model[1]. Version 2.2 has implemented 5 functional curves( Logistic Curve, Bi-Exponential Curve, Pharmacology Curve, Nonparametric method, Exponentiation Curve) and three cross types(backcross, F2 cross and RILs by selfing). the Function FM2.qtlscan is the easiest way to call the computational model by five arguments of the phenotype file, the genotype file, the marker file, the curve type and the cross type. The computational model automatically performs the hypothesis tests and permutation. The package can output a brief report for the raw data, results of the QTL scanning and permutation results. For some results, figures will be outputted to a PDF file and a Rdata file will be generated. For more details, please refer to the document. 
+The Funmap package is developed to identify quantitative trait loci (QTL) for a longitudinal, or vectorized, phenotypic trait as based on the Funmap model[1]. Version 2.4 has implemented 9 functional curves( Logistic Curve, Bi-Exponential Curve, Pharmacology Curve, Nonparametric method, Exponentiation Curve) , 13 covariance structures and 3 cross types (backcross, F2 cross and RILs by selfing). the Function FM2.pipe is the easiest way to call the computational model by five arguments of the phenotype file, the genotype file, the marker file, the cross type and the curve type. The computational model automatically performs the hypothesis tests and permutation. The package can output a brief report for the raw data, results of the QTL scanning and permutation results. For some results, figures will be outputted to a PDF file and a Rdata file will be generated. For more details, please refer to the document. 
 
 ## Installation Instructions:
 
@@ -18,9 +17,9 @@ The Funmap package is developed to identify quantitative trait loci (QTL) for a 
     
 1. R (http://www.r-project.org/)
     
-2. Package SKAT, mvtnorm, snpStats, snowfall.
-    
-Please install the required R package before you install LSKAT package. After the  installation of `SKAT`, `mvtnorm`, `snpStats` and `snowfall` package, please install the **LSKAT** as following steps.
+2. Package mvtnorm, parallel (required in R <= 3.0).
+
+Please install the required R package before you install Funmap package. After the  installation of `mvtnorm`, please install the **Funmap2** as following steps.
 
  
 ### Install LSKAT on LUNIX or Mac OSX
@@ -42,9 +41,9 @@ R CMD INSTALL Funmap2
 
 ##Usage instructions##
 
-LSKAT is an R package which provides the main functions:
+Funmap2 is an R package which provides the main functions:
 
-> 1) NULL model estimation to estimate the model parameters and the residuals.
+> 1) QTL mapping for the experiment data .
 
 > 2) Gene association test by LSKAT
 
@@ -53,26 +52,6 @@ LSKAT is an R package which provides the main functions:
 
 In general, two ways are common to do data analysis by LSKAT, one is test the genetic association between the longitudinal phenotype traits and SNP-set genotypic matrix, i.e, test LSKAT using the SNP-set matrix given the estimated NULL model which assumes no genetic effects contibute to phenotype traits.
 
-
-```
-## NULL model estimation
-r.nodel <- longskat_est_model( phe.long.matrix, phe.cov.matrix, phe.time.matrix);
-
-## Gene association test
-r.lskat <- longskat_gene_test( r.model, snp.mat);
-```
-
-Other way is to run LSKAT on whole PLINK data set using the pipeline provided by the function `longskat_gene_plink`
-
-
-```
-r.lskat <- longskat_gene_plink( file.plink.bed,  file.plink.bim,  file.plink.fam,  
-    file.phe.long,  file.phe.cov, NULL,  file.gene.set );
-```
-
-All functions and examples in the LSKAT are available in the manual (https://github.com/ZWang-Lab/LSKAT/blob/master/manual.pdf).
-
-Sample Script:
 The following source shows how to call the main function in R.
 
 ```
@@ -96,3 +75,9 @@ dat <- FM2.simulate(par);
 ret <- FM2.qtlmodel(dat);
 FM2.report( "report.pdf", dat, ret );
 ```
+All functions and examples in the LSKAT are available in the manual (https://github.com/ZWang-Lab/LSKAT/blob/master/manual.pdf).
+
+Sample Report:
+
+Link: http://statgen.psu.edu/software/funmap/report_demo.2.2.pdf
+
