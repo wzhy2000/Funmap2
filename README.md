@@ -49,25 +49,25 @@ Funmap2 is an R package which provides:
 
 > 1) pipeline to do QTL mapping for the experiment data.
 
-> 2) pipeline to do Simulation test.
+> 2) pipeline to do simulation test.
 
 > 3) data loading, estimation, QTL scaning, permutation and report functions.
 
-In general, pipeline is a common way to do data analysis by Funmap2, the following source shows how to call the pipeline in R.
+In general, pipeline is a common way to do data analysis by Funmap2, the following codes show how to call the pipeline in R.
 
 ```
 library(Funmap2);
 FM2.pipe( "pheno.csv", "time.csv", "geno.csv", "marker.csv", "BC", "Logistic" );
 ```
 
-The following source shows how to call the simulation test pipeline in R.
+The following codes show how to call the simulation test pipeline in R.
 
 ```
 library(Funmap2);
 FM2.simu.pipe();
 ```
 
-The following source shows how to call the main function in R.
+The following codes show how to call the main function in R.
 
 ```
 library(Funmap2);
