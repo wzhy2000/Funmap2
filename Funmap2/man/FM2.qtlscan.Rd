@@ -69,9 +69,9 @@ ret <- FM2.qtlscan(dat);
 show(ret);
 
 # Load the example data and do QTL scaning
-file.pheno.csv <- system.file("extdata","populus.pheno.csv", package="Funmap2")
-file.geno.csv <- system.file("extdata","populus.geno.csv", package="Funmap2")
-file.marker.csv <- system.file("extdata","populus.marker.csv", package="Funmap2")
+file.pheno.csv <- system.file("extdata","populus.BC.pheno.csv", package="Funmap2")
+file.geno.csv <- system.file("extdata","populus.BC.geno.csv", package="Funmap2")
+file.marker.csv <- system.file("extdata","populus.BC.marker.csv", package="Funmap2")
 dat <- FM2.load.data( file.pheno.csv, NULL, file.geno.csv, file.marker.csv, "BC",
     curve.type="logistic", 
     covar.type="AR1")

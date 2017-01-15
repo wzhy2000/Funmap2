@@ -73,9 +73,9 @@ The \code{options} paramaters can slightly adjust the results and greatly speed 
 \examples{
 
 # Load the pre-installed data for the example
-file.pheno.csv <- system.file("extdata","populus.pheno.csv", package="Funmap2")
-file.geno.csv <- system.file("extdata","populus.geno.csv", package="Funmap2")
-file.marker.csv <- system.file("extdata","populus.marker.csv", package="Funmap2")
+file.pheno.csv <- system.file("extdata","populus.BC.pheno.csv", package="Funmap2")
+file.geno.csv <- system.file("extdata","populus.BC.geno.csv", package="Funmap2")
+file.marker.csv <- system.file("extdata","populus.BC.marker.csv", package="Funmap2")
 
 # Call the pipeline without permutation.
 # Can't select QTL using pvalue due to the missing of permutation result.

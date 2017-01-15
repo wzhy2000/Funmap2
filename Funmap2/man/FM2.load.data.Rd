@@ -66,8 +66,8 @@ List of 6
  $ obj.covar:Formal class 'fg.covariance.SAD1' [package "Funmap2"] with 3 slots
  $ obj.cross:List of 14
  $ obj.gen  :List of 5
-  ..$ geno.csv    : chr "../populus.geno.csv"
-  ..$ marker.csv  : chr "../populus.marker.csv"
+  ..$ geno.csv    : chr "../populus.BC.geno.csv"
+  ..$ marker.csv  : chr "../populus.BC.marker.csv"
   ..$ marker.obj  : NULL
   ..$ marker.table:'data.frame':        275 obs. of  4 variables:
   .. ..$ Marker : Factor w/ 275 levels "A/15-620D   ",..: 227 251 122 123 124 244 186 243 272 61 ...
@@ -79,7 +79,7 @@ List of 6
   .. .. ..$ : chr [1:78] "1" "10" "11" "12" ...
   .. .. ..$ : chr [1:275] "marker1" "marker2" "marker3" "marker4" ...
  $ obj.phe  :List of 12
-  ..$ pheno.csv    : chr "../populus.pheno.csv"
+  ..$ pheno.csv    : chr "../populus.BC.pheno.csv"
   ..$ time.csv     : NULL
   ..$ log          : logi FALSE
   ..$ sample.obs   : int 78
@@ -178,9 +178,9 @@ id	Marker	Dist.	Grp_idx	Group
 \examples{
 
 # Load the pre-installed data for this example
-file.pheno.csv <- system.file("extdata","populus.pheno.csv", package="Funmap2")
-file.geno.csv <- system.file("extdata","populus.geno.csv", package="Funmap2")
-file.marker.csv <- system.file("extdata","populus.marker.csv", package="Funmap2")
+file.pheno.csv <- system.file("extdata","populus.BC.pheno.csv", package="Funmap2")
+file.geno.csv <- system.file("extdata","populus.BC.geno.csv", package="Funmap2")
+file.marker.csv <- system.file("extdata","populus.BC.marker.csv", package="Funmap2")
 
 # Call the pipeline without permutation.
 # Can't select QTL using pvalue due to the missing of permutation result.
