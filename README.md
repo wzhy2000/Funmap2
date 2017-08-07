@@ -45,7 +45,7 @@ R CMD INSTALL Funmap2
 
 3) Install the package in R GUI by selecting the menu "Packages|Install package(s) from local zip files..."
 
-##Usage instructions##
+## Usage instructions ##
 
 Funmap2 is an R package which provides:
 
