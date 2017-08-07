@@ -41,7 +41,9 @@ R CMD INSTALL Funmap2
 
 1) Please download windows package from (https://github.com/wzhy2000/Funmap2/raw/master/windows/Funmap2.ver2.4.win.zip)
 
-2) Install the package in R GUI by selecting the menu "Packages|Install package(s) from local zip files..."
+2) Rename the downloaded package to **Funmap2.zip** (It would be failed if long name package is installed directly)
+
+3) Install the package in R GUI by selecting the menu "Packages|Install package(s) from local zip files..."
 
 ##Usage instructions##
 
