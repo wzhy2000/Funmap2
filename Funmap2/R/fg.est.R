@@ -1,4 +1,4 @@
-fg_dat_est<-function( obj.phe, curve.type="auto", covariance.type="auto", file.plot.pdf=NULL, options=list() )
+fg_dat_est<-function( obj.phe, curve.type="auto", covariance.type="auto", file.plot.pdf=NULL, intercept=T, options=list() )
 {
 	if( is.null( obj.phe$obj.curve ) )
 	{
@@ -25,12 +25,12 @@ fg_dat_est<-function( obj.phe, curve.type="auto", covariance.type="auto", file.p
 	range <- proc_est_curve_range(obj.phe$pheY, obj.phe$pheX, obj.phe$pheT, obj.phe$obj.curve, par.init = r$par);
 
 	obj.phe$est.curve <- list( type = obj.phe$obj.curve@type,
-							   param = r$par[-(1:(1+parX.len))],
-							   param.lower = range$lower[-(1:(1+parX.len))],
-							   param.upper = range$upper[-(1:(1+parX.len))],
-							   parx  = r$par[1:(1+parX.len)],
-							   parX.lower = range$lower[(1:(1+parX.len))],
-							   parX.upper = range$upper[(1:(1+parX.len))] );
+							   param = if(parX.len>0) r$par[-(1:parX.len)] else r$par,
+							   param.lower = if(parX.len>0) range$lower[-(1:parX.len)] else range$lower,
+							   param.upper = if(parX.len>0) range$upper[-(1:parX.len)] else range$upper,
+							   parX  = if(parX.len>0) r$par[1:parX.len] else NULL,
+							   parX.lower = if(parX.len>0) range$lower[(1:parX.len)] else NULL,
+							   parX.upper = if(parX.len>0) range$upper[(1:parX.len)] else NULL);
 
 	if( is.null(obj.phe$obj.covar) || ( toupper(obj.phe$obj.covar@type) != toupper(covariance.type) ) )
 	{
@@ -57,27 +57,52 @@ fg_dat_est<-function( obj.phe, curve.type="auto", covariance.type="auto", file.p
 	return(obj.phe);
 }
 
+#fn_get_resd<-function(pheY, pheX, pheT, obj.curve, parin  )
+#{
+#	par_X <- c( parin[1] );
+#	if ( !is.null(pheX) )
+#		par_X <- c( par_X, parin[ 2:(NCOL(pheX)+1)]);
+#
+#	par_c <- parin[ -1 ];
+#	if ( !is.null(pheX) )
+#		par_c <- parin[ -(1:(NCOL(pheX)+1)) ]
+#
+#	mu_gen <- get_curve( obj.curve, par_c, pheT, options=list(max.time=max(pheT, na.rm=T), min.time=min(pheT, na.rm=T)) )
+#	if(all(is.na( mu_gen )))
+#		return(NULL);
+#
+#	if( is.vector( mu_gen ) )
+#		y_resd <- t(t(pheY) - mu_gen) -  matrix( rep( as.matrix( cbind(rep(1, NROW(pheY)), pheX)) %*% par_X, NCOL(pheY)), ncol=NCOL(pheY), byrow=F)
+#	else
+#		y_resd <- pheY - mu_gen  - matrix( rep( as.matrix( cbind(rep(1, NROW(pheY)), pheX)) %*% par_X, NCOL(pheY)), ncol=NCOL(pheY), byrow=F)
+#
+#	return( y_resd );
+#}
+
 fn_get_resd<-function(pheY, pheX, pheT, obj.curve, parin  )
 {
-	par_X <- c( parin[1] );
+	par_c <- parin;
+	par_X <- NULL;
+	X     <- rep(0, NROW(pheY));
 	if ( !is.null(pheX) )
-		par_X <- c( par_X, parin[ 2:(NCOL(pheX)+1)]);
-
-	par_c <- parin[ -1 ];
-	if ( !is.null(pheX) )
-		par_c <- parin[ -(1:(NCOL(pheX)+1)) ]
+	{
+		par_X <- c( par_c[ 1:NCOL(pheX)]);
+		par_c <- par_c[ -c(1:NCOL(pheX)) ];
+		X <- pheX %*% par_X;
+	}
 
 	mu_gen <- get_curve( obj.curve, par_c, pheT, options=list(max.time=max(pheT, na.rm=T), min.time=min(pheT, na.rm=T)) )
 	if(all(is.na( mu_gen )))
 		return(NULL);
 
 	if( is.vector( mu_gen ) )
-		y_resd <- t(t(pheY) - mu_gen) -  matrix( rep( as.matrix( cbind(rep(1, NROW(pheY)), pheX)) %*% par_X, NCOL(pheY)), ncol=NCOL(pheY), byrow=F)
+		y_resd <- t(t(pheY) - mu_gen) -  X %*% t(rep(1,NCOL(pheY)))
 	else
-		y_resd <- pheY - mu_gen  - matrix( rep( as.matrix( cbind(rep(1, NROW(pheY)), pheX)) %*% par_X, NCOL(pheY)), ncol=NCOL(pheY), byrow=F)
+		y_resd <- pheY - mu_gen  - X %*% t(rep(1,NCOL(pheY)))
 
 	return( y_resd );
 }
+
 
 proc_est_curve<-function(  pheY, pheX, pheT, obj.curve, par.init=NULL, options=list(n.loop=10)  )
 {
@@ -87,8 +112,7 @@ proc_est_curve<-function(  pheY, pheX, pheT, obj.curve, par.init=NULL, options=l
 	get_init_curve_par<-function( pheY, pheX, pheT, f.obj )
 	{
 		par.curve <- est_init_param( f.obj, pheY, pheX, pheT, options=options );
-		pheX.len  <- 1 + NCOL(pheX)
-		if( is.null(pheX) )  pheX.len <- 1;;
+		if( is.null(pheX) ) pheX.len <- 1 else pheX.len  <- NCOL(pheX);
 		par.X <- rep( mean(pheY, na.rm=T), pheX.len );
 
 		return( c(par.X, par.curve)  );
@@ -131,7 +155,7 @@ proc_est_curve<-function(  pheY, pheX, pheT, obj.curve, par.init=NULL, options=l
 
 	if( is.null( par.init) )
 	{
-		par.init <-  c( 0 );
+		par.init <-  c();
 		if( !is.null(pheX)) par.init <- c( par.init, mean(colMeans(pheY, na.rm=T), na.rm=T)/colMeans(pheX, na.rm=T) );
 		par.init <- c( par.init, est_init_param( obj.curve, pheY, pheX, pheT, options ) );
 	}
@@ -257,6 +281,9 @@ proc_est_covar<-function( Y.resd, pheX, pheT, obj.curve, obj.covar, par.init=NUL
 		A <- sum( pv );
 		return( -A );
 	}
+
+	options[['min.time']] <- min(pheT, na.rm=T);
+	options[['max.time']] <- max(pheT, na.rm=T);
 
 	if( is.null( par.init) )
 		par.init <- get_init_covar_par(  Y.resd, pheX, pheT, obj.covar );
@@ -449,7 +476,7 @@ fg_fit_curve<-function( pheY, pheX, pheT, curve.type="auto", file.plot.pdf=NULL 
 		cat( "* [", index<-index+1, "/", length(obj.curves), "] try curve: ", obj.curve@type, "\n" );
 		r <- proc_est_curve( pheY, pheX, pheT, obj.curve )
 		if( r$error )
-			warning("Can not estimate the parameters of mean vector according to the curve function[ curve.type=", obj.curve$type, "]" )
+			warning("Can not estimate the parameters of mean vector according to the curve function[ curve.type=", obj.curve@type, "]" )
 		else
 		{
 			r$type <- obj.curve@type;
@@ -472,13 +499,15 @@ fg_fit_curve<-function( pheY, pheX, pheT, curve.type="auto", file.plot.pdf=NULL 
 
 	        lines(ti, y.mu, col="black", lty="22", lwd=1);
 
-	        par_X <- c( r$par[1] );
+	        par_X <- NULL;
+	        par_c <- r$par;
+	        mu_X <- rep(0, NROW(pheY))
 	        if ( !is.null(pheX) )
-	   	        par_X <- c( par_X, r$par[ 2:(NCOL(pheX)+1)]);
-	        par_c <- r$par[ -1 ];
-	        if ( !is.null(pheX) )
-		       par_c <- r$par[ -(1:(NCOL(pheX)+1)) ]
-		    mu_X <- mean( cbind(1,pheX) %*% par_X, na.rm=T );
+	   	    {
+				par_X <- par_c[ 1:NCOL(pheX)];
+				par_c <- par_c[-c(1:NCOL(pheX))];
+				mu_X <- mean( pheX %*% par_X, na.rm=T );
+			}
 
 	        ti <- seq( min(pheT, na.rm=T), max(pheT, na.rm=T), 1);
 	        mu_gen <- get_curve( obj.curve, par_c, ti, options=list(max.time=max(pheT, na.rm=T), min.time=min(pheT, na.rm=T)))

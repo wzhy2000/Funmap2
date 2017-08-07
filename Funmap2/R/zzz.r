@@ -17,7 +17,7 @@ msg <- function(...)
 	#msg();
 
 	FG_ENV$i_hash <- new.env( hash=TRUE, parent=emptyenv(), size=100L);
-	
+
 	.RW("n.seed", 1);
 	.RW("debug", FALSE);
 	.RW("try.silent", TRUE);

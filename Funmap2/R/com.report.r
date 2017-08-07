@@ -168,10 +168,17 @@ Report.Output<-function( file )
 
 	pdf(file, paper="letter", width=7, height=9.5);
 
-	try( Report.do_pagecover() );
+	#try( Report.do_pagecover() );
+	#for (i in 1:length(FG_ENV$g_rpt$pages))
+	#{
+	#	try( Report.do_pagebody(i) );
+	#
+	#}
+
+	Report.do_pagecover();
 	for (i in 1:length(FG_ENV$g_rpt$pages))
 	{
-		try( Report.do_pagebody(i) );
+		Report.do_pagebody(i);
 
 	}
 
@@ -269,7 +276,8 @@ Report.do_heading<-function( lay )
 Report.do_paragraph<-function( lay )
 {
 	par(mar=c(0,0,0,0))
-	plot(1:20, 1:20, type="n", xlim=c(0, FG_ENV$g_rpt$page.width), ylim=c(0, lay$size[2]), xlab="", ylab="", lwd=2, xaxt="n", yaxt="n", bty="n");
+
+	plot(1:20, 1:20, type="n", xlim=c(0, FG_ENV$g_rpt$page.width), ylim=c(0, ifelse(lay$size[2]>0, lay$size[2],100)), xlab="", ylab="", lwd=2, xaxt="n", yaxt="n", bty="n");
 
 	for (i in 1:length(lay$sublay))
 	{
@@ -429,21 +437,27 @@ Report.get_textsize<-function( str, text.cex, text.widthlim, vfont=c("serif", "p
 	str.words <- strsplit(str, " ");
 	str.newwords <- c();
 	str.testline <- c(str.words[1]);
-	for (i in 2:length(str.words ) )
+
+	if(length(str.words ) > 1)
 	{
-		str.testwidth <- strwidth( paste( c( str.testline, str.words[i] ) , sep=" " ),
-						cex=text.cex, adj=0, vfont=c("serif", "plain") );
-		if ( str.testwidth > text.widthlim )
+		for (i in 2:length(str.words ) )
 		{
-			str.newwords <- c(str.newwords, str.testline, "\n");
-			str.testline <- c(str.words[i]);
+			str.testwidth <- strwidth( paste( c( str.testline, str.words[i] ) , sep=" " ),
+							cex=text.cex, adj=0, vfont=c("serif", "plain") );
+			if ( str.testwidth > text.widthlim )
+			{
+				str.newwords <- c(str.newwords, str.testline, "\n");
+				str.testline <- c(str.words[i]);
+			}
+			else
+				str.testline <- paste( str.testline, str.words[i], " ");
+
 		}
+		w <- strwidth(  str.newwords, cex=text.cex, adj=0, vfont=vfont );
+		h <- strheight( str.newwords, cex=text.cex, adj=0, vfont=vfont )*1.3;
 	}
 
-	w <- strwidth(  str.newwords, cex=text.cex, adj=0, vfont=vfont );
-	h <- strheight( str.newwords, cex=text.cex, adj=0, vfont=vfont )*1.3;
-
-	return(c(w,h));
+	return(c( min(w, text.widthlim), sum(h) ) );
 }
 
 Report.do_layout<-function()

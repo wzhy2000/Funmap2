@@ -1,17 +1,3 @@
-#################################################################
-#
-# New Systems Mapping Application(SysMap1)#
-# Common library
-#
-#    5) permutation()
-#    6) summary_perm_ret()
-#    7) plot_perm_ret()
-#
-# History:
-# 12/15/2011 Version 1.1
-#
-##################################################################
-
 #--------------------------------------------------------------
 # permu.execute
 #
@@ -25,7 +11,7 @@
 #--------------------------------------------------------------
 permu.execute<-function( dat, grp.idx=NULL, permu.loop, filter.ratio=1, scan.step=1, n.cores=1 )
 {
-	if(filter.ratio<1)
+	if( filter.ratio<1 && is.null(dat$obj.phe$pheX) )
 		dat$clustering <- permu.cluster(dat);
 	
 	#p0 <- task_start("Execute the permutation, nCount=", permu.loop, "...\n");
@@ -40,7 +26,7 @@ permu.execute<-function( dat, grp.idx=NULL, permu.loop, filter.ratio=1, scan.ste
 		dat0$clustering$Q <- dat0$clustering$Q[new_index, ];
 		
 		qtl_table <- NULL;
-		if(filter.ratio<1)
+		if( filter.ratio<1 && is.null(dat$obj.phe$pheX) )
 			qtl_table <- permu.qtlfilter( dat0, grp.idx, filter.ratio, scan.step );
 
 		r <- try( Qtlmle.qtlscan( dat0, qtl_table ), FALSE);
@@ -350,13 +336,9 @@ getpossibleLogL4<-function( Q, P)
 #--------------------------------------------------------------
 permu.cluster <- function( dat )
 {
-	obj.curve <- dat$obj.curve;
-	obj.covar <- dat$obj.covar;
-	obj.cross <- dat$obj.cross;
-
-	n.grp     <- obj.cross$gen_num;
-	n.par.cov <- get_param_info(obj.covar, dat$obj.phe$pheT)$count;
-	n.par.curve <- get_param_info(obj.curve, dat$obj.phe$pheT)$count;
+	n.grp     <- dat$obj.cross$gen_num;
+	n.par.cov <- get_param_info( dat$obj.covar, dat$obj.phe$pheT)$count;
+	n.par.curve <- get_param_info(dat$obj.curve, dat$obj.phe$pheT)$count;
 
 	mle <- function(par, W, pheY, pheT, pheX, obj.curve, obj.covar, obj.cross, optim=T)
 	{
@@ -404,18 +386,19 @@ permu.cluster <- function( dat )
 
 	W <- rep(1, n.grp)
 	W.new <- rep(1/n.grp, n.grp);
-	par.new <- c(dat$obj.phe$est.covar$param, rep( dat$obj.phe$est.curve$param, n.grp) )
+	par.new <- c( dat$obj.phe$est.covar$param, rep( dat$obj.phe$est.curve$param, n.grp) )
 	while( max(abs( c(W.new) - c(W) ) ) > 1e-5 )
 	{
 		W <- W.new;
-		par <- par.new;
-		r<- optim( par, mle, W=W, pheY=dat$obj.phe$pheY, pheT=dat$obj.phe$pheT, pheX=dat$obj.phe$pheX, obj.curve=dat$obj.curve, obj.covar= dat$obj.covar, obj.cross=dat$obj.cross, optim=T, control = list(maxit=50000));
-
-		if(r$convergence==0)
+		r <- try( optim( par.new, mle, W=W, pheY=dat$obj.phe$pheY, pheT=dat$obj.phe$pheT, pheX=dat$obj.phe$pheX, 
+			             obj.curve=dat$obj.curve, obj.covar= dat$obj.covar, obj.cross=dat$obj.cross, 
+			             optim=T, control = list(maxit=50000)));
+		
+		if(class(r)!="try-error" && r$convergence==0)
 		{
-			par.new <- r$par
+			par.new <- r$par;
 			r.est <- mle(par.new, W, dat$obj.phe$pheY, dat$obj.phe$pheT, dat$obj.phe$pheX, dat$obj.curve, dat$obj.covar, dat$obj.cross, optim=F);
-			Q <- r.est$Q
+			Q <- r.est$Q;
 			L <- r.est$L / rowSums(r.est$L);
 			W.new <- colSums(L)/NROW(dat$obj.phe$pheY);
 cat("*******w", W.new, "\n");

@@ -79,6 +79,9 @@ dat.simulate <- function( obj.cross, obj.curve, obj.covar, simu.mrkdist, simu.qt
 	if( missing(par0) || is.null(par0) || missing(par1) || is.null(par1) || missing(par2) || is.null(par2) )
 	{
 		simu_parm <- get_simu_param( obj.curve, simu.times );
+		if(is.null(simu_parm))
+			stop("Failed to get the simulate parameter from the curve object.");
+			
 		par0 <- simu_parm[1,];
 		par1 <- simu_parm[2,];
 		par2 <- simu_parm[3,];
@@ -104,7 +107,7 @@ dat.simulate <- function( obj.cross, obj.curve, obj.covar, simu.mrkdist, simu.qt
 		par2           = par2,
 		par.covar      = par.covar,
 		phe.missing    = phe.missing,
-		marker.missing = marker.missing );
+		marker.missing = marker.missing);
 	class(obj.par) <-  "FM2.par";
 
 	geno_simu <- function()
@@ -186,7 +189,6 @@ dat.simulate <- function( obj.cross, obj.curve, obj.covar, simu.mrkdist, simu.qt
 	qtlmrk2 <- idx[1]+1;
 	qtl.gen <- obj.cross$get_simu_qtl( obj.par$simu.obs, obj.gen$genos.matrix[,qtlmrk1], obj.gen$genos.matrix[,qtlmrk2],
 									  obj.par$simu.qtlpos, mrkplace[qtlmrk1], mrkplace[qtlmrk2], obj.par$cross.options );
-
 	sim.covar <- get_matrix( obj.covar, par.covar, 1:length(obj.par$simu.times) );
 	for (i in 1:obj.par$simu.obs)
 	{
@@ -196,7 +198,7 @@ dat.simulate <- function( obj.cross, obj.curve, obj.covar, simu.mrkdist, simu.qt
 		 if( !is.null(pheX) )
 		 	pheY[i, ]  <- pheY[i, ] + sum( pheX[i,] * par.X );
 	}
-	
+
 	obj.phe <- list();
 	obj.phe$pheno_csv <- paste("Simu-", obj.curve@type, "-", obj.covar@type, ".csv", sep="");
 	obj.phe$obj.curve <- obj.curve;
@@ -227,7 +229,7 @@ dat.simulate <- function( obj.cross, obj.curve, obj.covar, simu.mrkdist, simu.qt
 #  file : pheno_csv, geno_csv, marker_csv
 #  cross: cross type, BC or F2
 #--------------------------------------------------------------
-dat.load<-function( pheno_csv, time_csv, geno_csv, marker_csv, log=FALSE, head=TRUE )
+dat.load<-function( pheno_csv, time_csv, covariate_csv, geno_csv, marker_csv, intercept=FALSE, log=FALSE, head=TRUE )
 {
 	dat<-list(
 		obj.gen = list(
@@ -239,7 +241,9 @@ dat.load<-function( pheno_csv, time_csv, geno_csv, marker_csv, log=FALSE, head=T
 		obj.phe = list(
 			pheno.csv    = pheno_csv,
 			time.csv     = time_csv,
+			covariate.csv = covariate_csv,
 			sample.obs   = 0,
+			intercept    = intercept,
 			log          = F,
 			sample.times = NULL,
 			pheY         = NULL,
@@ -248,23 +252,48 @@ dat.load<-function( pheno_csv, time_csv, geno_csv, marker_csv, log=FALSE, head=T
 
 	tb.gen <- read.csv( file=geno_csv, sep=",", header=head, row.names=1);
 	tb.phe <- read.csv( file=pheno_csv, sep=",", header=head,row.names=1);
-	if(!is.null(time_csv))
-		tb.time <- read.csv( file=time_csv, sep=",", header=head, row.names=1)
-	else
-		tb.time <- NULL;
 
-	tb.gen <- tb.gen[ order(rownames(tb.gen)),]
-	tb.phe <- tb.phe[ order(rownames(tb.phe)),]
+	tb.time <- NULL;
+	if( !is.null(time_csv) )
+		tb.time <- read.csv( file=time_csv, sep=",", header=head, row.names=1)
+
+	tb.covariate <- NULL;
+	if(!is.null(covariate_csv))
+		tb.covariate <- read.csv( file=covariate_csv, sep=",", header=head, row.names=1)
+	if(intercept)
+	{
+		if(!is.null(tb.covariate))
+			tb.covariate <- cbind(intercept=1, tb.covariate)
+		else
+		{
+			tb.covariate <- data.frame(intercept=rep(1, NROW(tb.phe)));
+			rownames(tb.covariate) <- rownames(tb.phe);
+		}
+	}
+
+	tb.gen <- tb.gen[ order(rownames(tb.gen)),,drop=F]
+	tb.phe <- tb.phe[ order(rownames(tb.phe)),,drop=F]
 	if(!is.null(tb.time) )
-		tb.time <- tb.time[ order(rownames(tb.time)),]
+		tb.time <- tb.time[ order(rownames(tb.time)),,drop=F]
+	if(!is.null(tb.covariate) )
+		tb.covariate <- tb.covariate[ order(rownames(tb.covariate)),,drop=F]
 
    	#if the ids in two files are not consistent, it would be bad data.
    	if ( any(rownames(tb.gen) != rownames(tb.phe) ) )
-   		stop("Error: the ids in phenotype file and genotype fils are not consistent!");
+   		stop("Error: the ids in the genotype file and the phenotype fils are not consistent!");
 
 	if(!is.null(tb.time))
    		if ( any(rownames(tb.time) != rownames(tb.phe) ) )
-	   		stop("Error: the ids in phenotype file and genotype fils are not consistent!");
+	   		stop("Error: the ids in the time file and the phenotype fils are not consistent!");
+
+	if(!is.null(tb.covariate))
+   	{
+		if ( any(rownames(tb.covariate) != rownames(tb.phe) ) )
+	   		stop("Error: the ids in the covariate file and the phenotype fils are not consistent!");
+
+        if (any(is.na(tb.covariate)) || any(is.null(tb.covariate)) )
+	   		stop("Error: missing data in the covariate file is not allowed.!");
+    }
 
 	rowCheck<-function(vec)
 	{
@@ -278,13 +307,16 @@ dat.load<-function( pheno_csv, time_csv, geno_csv, marker_csv, log=FALSE, head=T
 	if ( length(missing) > 0)
 	{
 		cat("Removing missing individuals", length(missing), ".\n");
-		tb.gen <- tb.gen[ -(missing),];
-		tb.phe <- tb.phe[ -(missing),];
+		tb.gen <- tb.gen[ -(missing),,drop=F];
+		tb.phe <- tb.phe[ -(missing),,drop=F];
 		if(!is.null(tb.time))
-			tb.time <- tb.time[ -(missing),];
+			tb.time <- tb.time[ -(missing),,drop=F];
+		if(!is.null(tb.covariate))
+			tb.covariate <- tb.covariate[ -(missing),,drop=F];
 	}
 
    	dat$obj.phe$pheY <- as.matrix(tb.phe);
+   	dat$obj.phe$pheX <- if (is.null(tb.covariate) ) NULL else as.matrix(tb.covariate);
    	dat$obj.gen$genos.matrix  <- as.matrix(tb.gen);
 
 	if(is.null(tb.time))
@@ -345,25 +377,27 @@ dat.summary<-function( dat )
 
 	str1 <- sprintf("%15s: %s\n", 	 "Pheno. file",	   dat$obj.phe$pheno.csv );
 	str2 <- sprintf("%15s: %s\n", 	 "Time  file",	   dat$obj.phe$time.csv );
-	str3 <- sprintf("%15s: %s\n", 	 "Geno. file", 	   dat$obj.gen$geno.csv );
-	str4 <- sprintf("%15s: %s\n", 	 "Maker file", 	   dat$obj.gen$marker.csv );
-	str5 <- sprintf("%15s: %-10.0f\n", "Sample size",  dat$obj.phe$sample.obs );
-	str6 <- sprintf("%15s: %-10.0f\n", "Sample times", NCOL(dat$obj.phe$pheY) );
-	str7 <- sprintf("%15s: %-10.0f\n", "Marker count", NROW(dat$obj.gen$marker.table) );
-	str8 <- sprintf("%15s: %-10.0f\n", "Chr/Group count", length(unique(dat$obj.gen$marker.table$grp_idx)) );
-	str9 <- sprintf("%15s: %-10.0f\n", "Marker missing", sum(is.na(dat$obj.gen$genos.matrix) || dat$obj.gen$genos.matrix==-1)/length(dat$obj.gen$genos.mattix) );
-	str10 <- sprintf("%15s: %-10.0f\n", "Phenotype missing", sum(is.na(dat$obj.phe$pheY))/length(dat$obj.phe$pheY));
+	str3 <- sprintf("%15s: %s\n", 	 "Covariate",	   dat$obj.phe$covariate.csv );
+	str4 <- sprintf("%15s: %s\n", 	 "Geno. file", 	   dat$obj.gen$geno.csv );
+	str5 <- sprintf("%15s: %s\n", 	 "Maker file", 	   dat$obj.gen$marker.csv );
+	str6 <- sprintf("%15s: %-10.0f\n", "Sample size",  dat$obj.phe$sample.obs );
+	str7 <- sprintf("%15s: %-10.0f\n", "Sample times", NCOL(dat$obj.phe$pheY) );
+	str8 <- sprintf("%15s: %-10.0f\n", "Marker count", NROW(dat$obj.gen$marker.table) );
+	str9 <- sprintf("%15s: %-10.0f\n", "Chr/Group count", length(unique(dat$obj.gen$marker.table$grp_idx)) );
+	str10 <- sprintf("%15s: %-10.0f\n", "Marker missing", sum(is.na(dat$obj.gen$genos.matrix) || dat$obj.gen$genos.matrix==-1)/length(dat$obj.gen$genos.matrix) );
+	str11 <- sprintf("%15s: %-10.0f\n", "Phenotype missing", sum(is.na(dat$obj.phe$pheY))/length(dat$obj.phe$pheY));
 
-	str11 <- sprintf("%15s: %s\n", 	 "Cross", 	        dat$obj.cross$type);
+	str12 <- sprintf("%15s: %s\n", 	 "Cross", 	        dat$obj.cross$type);
 	if(!is.null(dat$obj.curve))
-		str12 <- sprintf("%15s: %s\n", 	 "Curve",       dat$obj.curve@type );
+		str13 <- sprintf("%15s: %s\n", 	 "Curve",       dat$obj.curve@type );
 	if(!is.null(dat$obj.covar))
-		str13 <- sprintf("%15s: %s\n", 	 "Covariance", 	dat$obj.covar@type);
+		str14 <- sprintf("%15s: %s\n", 	 "Covariance", 	dat$obj.covar@type);
 
+	str15 <- sprintf("%15s: %s\n", 	 "Intercept", 	dat$obj.phe$intercept);
 	strd <- sprintf("------------------------------------\n\n");
 
-	str <- paste(strt, stru, str0, str1, str2, str3, str4, str5, 
-	             str6, str7, str8, str9, str10, str11, str12, str13, strd, sep="" );
+	str <- paste(strt, stru, str0, str1, str2, str3, str4, str5,
+	             str6, str7, str8, str9, str10, str11, str12, str13, str14, str15,strd, sep="" );
 
 	return (str);
 }
@@ -379,14 +413,6 @@ dat.plot<- function( dat, plot_type=NULL, pdf_file=NULL  )
 	if (is.null(pdf_file))  X11() else pdf(pdf_file);
 
 	# Figure 1
-	if( is.null(plot_type) || plot_type==2 )
-	{
-		err.fig2 <- try( fpt.plot_overlapping_curves( dat$obj.phe$pheY, dat$obj.phe$pheT, dat$obj.phe$pheX ) );
-		if ( class(err.fig2) != "try-error" )
-			title(paste("The ", dat$obj.curve@type," for all individuals.", sep=""));
-	}
-
-	# Figure 2
 	if( is.null(plot_type) || plot_type==1)
 	{
 		err.fig1 <- try( fpt.plot_tiled_curves( dat$obj.phe$pheY, dat$obj.phe$pheT, dat$obj.phe$pheX, max_curves=8*8 ) );
@@ -394,12 +420,37 @@ dat.plot<- function( dat, plot_type=NULL, pdf_file=NULL  )
 			title(paste("The ",dat$obj.curve@type," for all individuals.", sep=""));
 	}
 
+	# Figure 2
+	if( is.null(plot_type) || plot_type==2 )
+	{
+		err.fig2 <- try( fpt.plot_overlapping_curves( dat$obj.phe$pheY, dat$obj.phe$pheT, dat$obj.phe$pheX ) );
+		if ( class(err.fig2) != "try-error" )
+			title(paste("The ", dat$obj.curve@type," for all individuals.", sep=""));
+	}
+
+	# Figure 3
+	if( is.null(plot_type) || plot_type==3)
+	{
+		err.fig3 <- try( fpt.gene.map(dat) );
+		if ( class(err.fig3) != "try-error" )
+			title(paste("The genetic map for all individuals."));
+	}
+
+	# Figure 4
+	if( is.null(plot_type) || plot_type==4)
+	{
+		err.fig4 <- try( fpt.plot_genotype( dat ) );
+		if ( class(err.fig4) != "try-error" )
+			title(paste("The genotype map for all individuals."));
+	}
+
 	if (!is.null(pdf_file))
 	{
 		dev.off()
 		cat( paste( "* The figures for all individuals are saved to ", pdf_file, ".\n", sep=""));
-	}	
+	}
 }
+
 
 #--------------------------------------------------------------
 # public: fin.get_traits_mu

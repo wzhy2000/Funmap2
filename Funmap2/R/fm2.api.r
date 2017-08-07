@@ -30,6 +30,19 @@ cur <- function(){
     return(FG_ENV);
 }
 
+
+#--------------------------------------------------------------
+# FM2.register.curve
+#
+# Create user-define curve object
+#--------------------------------------------------------------
+
+FM2.register.curve<-function(fun, curve.type, param.name, formula.string=NULL, simu.param=NULL, est.fun=NULL)
+{
+	return( fg.registerCurve(fun, curve.type, param.name, formula.string, simu.param, est.fun) );
+}
+
+
 #--------------------------------------------------------------
 # FM2.get.curve
 #
@@ -57,7 +70,7 @@ FM2.get.covariance <- function( covar.type )
 # FM2.simulate
 #
 # Create a simulation data set by parameter object
-#-------------------------------------------------------------- 
+#--------------------------------------------------------------
 FM2.simulate <- function( cross.type = "BC", curve.type="Logistic", covar.type="AR1", simu.mrkdist=rep(20,10), simu.qtlpos=95, simu.obs=800, simu.times=8,
 			par.X=NULL, par0=NULL, par1=NULL, par2=NULL, par.covar=NULL, phe.missing=0.01, marker.missing=0.01, pdf.file =NULL )
 {
@@ -74,8 +87,8 @@ FM2.simulate <- function( cross.type = "BC", curve.type="Logistic", covar.type="
 		stop(paste("Invalid covariance type(", covar.type, ")", sep=""));
 
 	dat <- dat.simulate( obj.cross, obj.curve, obj.covar, simu.mrkdist, simu.qtlpos, simu.obs, simu.times,
-			par.X=par.X, par0=par0, par1=par1, par2=par2, par.covar=par.covar, 
-			phe.missing=phe.missing, marker.missing=marker.missing );
+			par.X=par.X, par0=par0, par1=par1, par2=par2, par.covar=par.covar,
+			phe.missing=phe.missing, marker.missing=marker.missing);
 
 	if( is.null(dat) || dat$error )
 		stop("Failed to simulate data.");
@@ -94,13 +107,13 @@ FM2.simulate <- function( cross.type = "BC", curve.type="Logistic", covar.type="
 # Load a real data, phenotype file, genotype file, marker file
 # is necessary.
 #--------------------------------------------------------------
-FM2.load.data <- function( pheno.csv, time.csv, geno.csv, marker.csv, cross.type, curve.type=NULL, covar.type=NULL, pdf.file=NULL, log=FALSE )
+FM2.load.data <- function( pheno.csv, time.csv, geno.csv, marker.csv, cross.type, curve.type=NULL, covar.type=NULL, pdf.file=NULL, covariate.csv=NULL, intercept=FALSE, log=FALSE )
 {
 	obj.cross <- FM2.get_cross(cross.type);
 	if (is.null(obj.cross))
 		stop(paste("Invalid cross type(", cross.type, ")", sep=""));
 
-	dat <- dat.load( pheno.csv, time.csv, geno.csv, marker.csv, log);
+	dat <- dat.load( pheno.csv, time.csv, covariate.csv, geno.csv, marker.csv, intercept=intercept, log=log);
 	if( is.null(dat) || dat$error )
 		stop("Failed to load data.");
 
@@ -207,7 +220,7 @@ FM2.qtlscan<-function( dat, model="MLE", grp.idx=NULL, options=list() )
 		r.time <- system.time( ret<- Qtlmle.qtlscan( dat, NULL, grp.idx, options) );
 		if(is.null(ret) || ret$error )
 			stop("Failed to scan QTL positions.");
-		
+
 		#copy the data into result object
 		ret$obj.phe   <- dat$obj.phe;
 		ret$obj.gen   <- dat$obj.gen;
@@ -215,7 +228,7 @@ FM2.qtlscan<-function( dat, model="MLE", grp.idx=NULL, options=list() )
 		ret$obj.covar <- dat$obj.covar;
 		ret$obj.cross <- dat$obj.cross;
 		ret$time      <- r.time;
-		
+
 		class( ret ) <- "FM2.qtl.mle";
 	}
 
@@ -243,9 +256,9 @@ print.FM2.qtl.mle<-function( x, ... )
 #--------------------------------------------------------------
 summary.FM2.qtl.mle<-function( object, ... )
 {
-	if(class(object)!="FM2.qtl.mle") 
+	if(class(object)!="FM2.qtl.mle")
 		stop("Invalid QTL result object.");
-	
+
 	cat( Qtlmle.summary( object ) );
 	invisible();
 }
@@ -258,9 +271,9 @@ summary.FM2.qtl.mle<-function( object, ... )
 plot.FM2.qtl.mle<-function( x, plot.type=NULL, pdf.file=NULL, ... )
 {
 	res <- x;
-	if(class(res)!="FM2.qtl.mle") 
+	if(class(res)!="FM2.qtl.mle")
 		stop("Invalid QTL result object.");
-		
+
 	Qtlmle.plot( res, plot.type, pdf.file );
 	invisible();
 }
@@ -336,32 +349,32 @@ plot.FM2.qtl.mle.perm<-function( x, pdf.file=NULL, ... )
 }
 
 #--------------------------------------------------------------
-# public: 
+# public:
 #
 #--------------------------------------------------------------
 FM2.select.qtl<-function( res,  threshold=0.05, threshold.type="pvalue")
 {
-	if(class(res)!="FM2.qtl.mle") 
+	if(class(res)!="FM2.qtl.mle")
 		stop("Invalid scan result object.");
-	
+
 	if(is.null(threshold.type) || missing(threshold.type))
 		threshold.type <- "pvalue";
-		
+
 	threshold.type <- tolower(threshold.type);
 	if (!(threshold.type %in% c("pvalue","count","lr")))
 		stop("'threshold.type' has 3 optional values: 'pvalue', 'LR', 'count'.");
-	
-	if( threshold.type=="pvalue" && is.null(res$obj.permu) )	
+
+	if( threshold.type=="pvalue" && is.null(res$obj.permu) )
 		stop("No permutation results.");
 
-	if(is.null(threshold) && missing(threshold) )	
+	if(is.null(threshold) && missing(threshold) )
 		stop("No cutoff or pvlaue are used for the criterion.");
-	
-	count <- cutoff<- pvalue <- NULL; 
+
+	count <- cutoff<- pvalue <- NULL;
 	if(threshold.type=="pvalue") pvalue <- threshold;
 	if(threshold.type=="lr") count <-  threshold;
 	if(threshold.type=="count") count <- threshold;
-	
+
 	res <- fin.qtl_locate( res, pvalue, cutoff, count );
 	return(res);
 }
@@ -372,10 +385,10 @@ FM2.select.qtl<-function( res,  threshold=0.05, threshold.type="pvalue")
 
 FM2.report<-function( file.report.pdf, dat, res=NULL, options=list( debug=F ) )
 {
-	if(class(dat)!="FM2.dat") 
+	if(class(dat)!="FM2.dat")
 		stop("Invalid data object.");
-	
-	if(class(res)!="FM2.qtl.mle") 
+
+	if(class(res)!="FM2.qtl.mle")
 		stop("Invalid scan result object.");
 
 	Report.new( file.report.pdf, options );
@@ -398,9 +411,9 @@ FM2.report<-function( file.report.pdf, dat, res=NULL, options=list( debug=F ) )
 
 		#output the permutation;
 		if(!is.null(res$obj.permu))
-			fre.report_perm( res$obj.permu )		
+			fre.report_perm( res$obj.permu )
 	}
-	
+
 	Report.Output( file.report.pdf );
 }
 
@@ -420,16 +433,16 @@ FM2.report<-function( file.report.pdf, dat, res=NULL, options=list( debug=F ) )
 #   be selected.
 #
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-FM2.pipe<-function(pheno.csv, time.csv, geno.csv, marker.csv, cross.type, curve.type=NULL, covar.type=NULL, model="MLE", 
+FM2.pipe<-function(pheno.csv, time.csv, geno.csv, marker.csv, cross.type, curve.type=NULL, covar.type=NULL, covariate.csv=NULL, intercept=FALSE, model="MLE",
 			grp.idx=NULL, pdf.prefix=NULL, threshold=0.05, threshold.type="pvalue", options=list() )
 {
 	options <- merge.default.options(options);
 
-	dat<- FM2.load.data( pheno.csv, time.csv, geno.csv, marker.csv, cross.type, curve.type, covar.type );
+	dat<- FM2.load.data( pheno.csv, time.csv, geno.csv, marker.csv, cross.type, curve.type=curve.type, covar.type=covar.type, covariate.csv=covariate.csv, intercept=intercept );
 	if ( is.null(dat)  || dat$error )
 		stop("Failed to load the phenotype or estimate the parameters.");
 
-	p <- FM2.pipe.rest(dat, model, grp.idx, pdf.prefix, threshold, threshold.type, options); 
+	p <- FM2.pipe.rest(dat, model, grp.idx, pdf.prefix, threshold, threshold.type, options);
 	return(list(dat=p$dat, ret=p$ret));
 }
 
@@ -440,21 +453,21 @@ FM2.pipe<-function(pheno.csv, time.csv, geno.csv, marker.csv, cross.type, curve.
 #
 # The result is saved into [LC_simu_test_XX_XX.rdata]
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-FM2.simu.pipe<-function( 
-				cross.type = "BC", curve.type="Logistic", covar.type="AR1", simu.mrkdist=rep(20,10), simu.qtlpos=95, 
+FM2.simu.pipe<-function(
+				cross.type = "BC", curve.type="Logistic", covar.type="AR1", simu.mrkdist=rep(20,10), simu.qtlpos=95,
 				simu.obs=800, simu.times=8, par.X=NULL, par0=NULL, par1=NULL, par2=NULL, par.covar=NULL, 
-				phe.missing=0.01, marker.missing=0.01,  threshold=0.05, threshold.type="pvalue", 
+				phe.missing=0.01, marker.missing=0.01,  threshold=0.05, threshold.type="pvalue",
 				model="MLE", pdf.prefix=NULL, options=list() )
 {
 	options <- merge.default.options(options);
-	
-	dat <- FM2.simulate( cross.type, curve.type, covar.type, simu.mrkdist, simu.qtlpos, simu.obs, simu.times, 
+
+	dat <- FM2.simulate( cross.type, curve.type, covar.type, simu.mrkdist, simu.qtlpos, simu.obs, simu.times,
 			par.X, par0, par1, par2, par.covar, phe.missing, marker.missing );
 	if (is.null(dat) || dat$error)
 		stop("Failed to generate simulation data.");
-	
+
 	grp.idx <- NULL;
-	p <- FM2.pipe.rest(dat, model, grp.idx, pdf.prefix, threshold, threshold.type, options); 
+	p <- FM2.pipe.rest(dat, model, grp.idx, pdf.prefix, threshold, threshold.type, options);
 	return(list(dat=p$dat, ret=p$ret));
 }
 
@@ -462,7 +475,7 @@ merge.default.options <- function( options )
 {
 	default <- list( scan.step=1, peak.count=5, debug=F, n.cores=1, permu.loop=100, permu.filter.ratio=1 );
 	default[names(options)] <- options;
-	options <- default;	
+	options <- default;
 
 	# debug
 	if ( is.null(options$debug) || is.na(options$debug) ) options$debug <- FALSE;
@@ -478,7 +491,7 @@ merge.default.options <- function( options )
 	if ( is.null(options$permu.filter.ratio) || is.na(options$permu.filter.ratio) ) options$permu.filter.ratio <- 1;
 
 	.RW("debug", options$debug);
-	
+
 	return(options);
 }
 
@@ -494,7 +507,15 @@ FM2.pipe.rest <- function(dat, model, grp.idx, pdf.prefix, threshold, threshold.
 	if(!is.null(pdf.prefix))
 		try( plot( ret, pdf.file=paste(pdf.prefix, ".mle.pdf", sep="") ) )
 
-	try( FM2.report( paste(pdf.prefix, ".rpt.pdf", sep=""), dat, ret ) )
+	if (!is.null(pdf.prefix))
+		pdf.rpt <- paste(pdf.prefix, ".rpt.pdf", sep="")
+	else
+	{
+		pdf.rpt <- tempfile(tmpdir=".", fileext=".rpt.pdf");
+		cat("Report PDF: ", pdf.rpt, "\n");
+	}
+
+	try( FM2.report( pdf.rpt, dat, ret ) )
 
 	if ( options$permu.loop > 1)
 	{
@@ -505,10 +526,11 @@ FM2.pipe.rest <- function(dat, model, grp.idx, pdf.prefix, threshold, threshold.
 		ret <- FM2.select.qtl( ret, threshold, threshold.type );
 		if(!is.null(pdf.prefix))
 			try( plot( ret, pdf.file=paste( pdf.prefix, ".mle.pdf", sep="") ) )
+
+		try( FM2.report( pdf.rpt, dat, ret ) )
 	}
 
-	if(!is.null(pdf.prefix))
-		try( FM2.report( paste(pdf.prefix, ".rpt.pdf", sep=""), dat, ret ) )
-		
-	return(list(dat=dat, ret=ret));	
+	return(list(dat=dat, ret=ret));
 }
+
+

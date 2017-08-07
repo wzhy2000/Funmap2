@@ -449,7 +449,8 @@ fpt.get_SmallestVar2<-function( ch_ev, nRowChrs, iStart)
 		nRowBack[iStart]   <- i;
 		nRowBack[iStart+1] <- nSum-i;
 		var2 <- fpt.get_deltvar(ch_ev, nRowBack, iStart , 2);
-		if (var2[1]<delt_var)
+
+		if (var2[1]<delt_var[1])
 		{
 			delt_var<-var2[1];
 			x1<-i;

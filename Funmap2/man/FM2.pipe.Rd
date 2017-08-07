@@ -11,6 +11,8 @@
 FM2.pipe( pheno.csv, time.csv, geno.csv, marker.csv, cross.type, 
     curve.type = NULL, 
     covar.type = NULL, 
+    covariate.csv = NULL,
+    intercept = FALSE, 
     model = "MLE", 
     grp.idx = NULL, 
     pdf.prefix = NULL, 
@@ -27,6 +29,8 @@ FM2.pipe( pheno.csv, time.csv, geno.csv, marker.csv, cross.type,
 \item{cross.type}{string value indicating the cross type, including "F2", "BC" and "RIL".}
 \item{curve.type}{string value indicating the curve type, including "auto", "logistic", "Exponential", "Power", "Legendre2", .., the full list is described in the details section of \code{\link{FM2.get.curve}}.}
 \item{covar.type}{string value indicating the type of covariance structure, including "auto", "AR1", "SAD1", "ARMA", "CS", .., the full list is described in the details section of \code{\link{FM2.get.covariance}}.}
+\item{covariate.csv}{a CSV file of covariate values for each individuals. The format is described in the details section of \code{\link{FM2.load.data}}.}
+\item{intercept}{boolean value indicating whether intercept is used in the statistical model.}
 \item{model}{string value indicating the computation algorithm, currently only "MLE" is option.}
 \item{grp.idx}{a numeric vector indicating which chromosomes or groups get involved in the QTL scaning.}
 \item{pdf.prefix}{string value indicating the pefix name of pdf file exported by the pipeline}

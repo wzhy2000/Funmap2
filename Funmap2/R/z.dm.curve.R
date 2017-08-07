@@ -24,31 +24,92 @@ setMethod("show", signature(object="fg.curve.base"), function(object){
 });
 
 #------------------------------------------------------------------------------------------
-# mufunc
+# Curve function
 #------------------------------------------------------------------------------------------
+fg.registerCurve<-function(fun, curve.type, param.name, formula.string=NULL, simu.param=NULL, est.fun=NULL)
+{
+	idx.userdef <- -1;
+	if( is.null(.RR("userdef.curves", NULL)) )
+	{
+		for(obj in fg.allBuiltinCurves())
+			if(toupper(obj@type)==toupper(curve.type))
+				stop("! The curve type exists in the built-in curves, please rename the curve type name.");
+	}
+	else
+	{
+		userdef <- .RR("userdef.curves", NULL)
+		for(i in  1:length(userdef) )
+		{
+			obj <- userdef[[i]]
+			if(toupper(obj@type)==toupper(curve.type))
+			{
+				warning("! The curve type exists as a user defined curves. The content will be updated.");
+				idx.userdef <- i;
+				break;
+			}	
+		}		
+	}
+
+	if(idx.userdef==-1)
+	{
+		.RW("userdef.curves", list());
+		idx.userdef <- 1;
+	}	
+		
+	userdef <- .RR("userdef.curves", NULL);
+	
+	default.est.fun<-function(object, pheY, pheX, pheT, options=list())
+	{
+		r.max <- max( pheY, na.rm=T );
+		r.min <- min( pheY, na.rm=T );
+	
+		return( runif( length(object@param.name), r.min, r.max) );
+	}
+
+	userdef[[idx.userdef]] <- new("fg.curve.userdef", description=paste(curve.type, "curve", sep=" "), 
+						type = as.character(curve.type), 
+						param.name = as.character(param.name), 
+						fun = fun,
+						formula = as.character(formula.string), 
+						simu.param = as.list(simu.param), 
+						est.fun = if(!is.null(est.fun)) est.fun else default.est.fun );
+	
+	.RW("userdef.curves", userdef );
+	x <- userdef[[idx.userdef]];
+	
+	invisible(x);
+}
 
 fg.getCurve<-function(type)
 {
+	userdef <- .RR("userdef.curves", NULL);
+	if(!is.null(userdef))
+	{
+		for(obj in userdef)
+			if(toupper(obj@type)==toupper(type))
+				return(obj);
+	}
+
 	obj.curve <- NULL;
 	if(is.character(type))
 	{
-		for(obj in fg.allCurves())
+		for(obj in fg.allBuiltinCurves())
 			if(toupper(obj@type)==toupper(type))
 				obj.curve <- obj;
 	}
 
 	if(is.numeric(type))
-		obj.curve <- fg.allCurves()[[type]];
+		obj.curve <- fg.allBuiltinCurves()[[type]];
 
 	return(obj.curve);
 }
 
 fg_get_curve_count<-function()
 {
-	return(length(fg.allCurves()));
+	return(length(fg.allBuiltinCurves()));
 }
 
-fg.allCurves<-function()
+fg.allBuiltinCurves<-function()
 {
 	list.curve <- list()
 	cn<-0
@@ -71,10 +132,66 @@ fg.allCurves<-function()
 	return(list.curve);
 }
 
-fg.addCurve<-function()
+##-----------------------------------------------------------
+## user-define curve
+##
+##    unknown
+##
+##-----------------------------------------------------------
+userdef_get_cueve <- function(object, par, times, options=list())
 {
-
+	y <- object@fun( object, par, times, options);
+	return(y);
 }
+
+userdef_get_param_info<-function(object, times, options=list())
+{
+	return(list(count=length(object@param.name), names=object@param.name, formula=object@formula ));
+}
+
+userdef_check_param<-function(object, par, times, options=list())
+{
+	return(TRUE);
+}
+
+userdef_get_simu_param<-function(object, times, options=list())
+{
+	if(length(object@simu.param)>0)
+		return( rbind( object@simu.param[[1]], object@simu.param[[2]], object@simu.param[[3]]) )
+	else
+		return(NULL);
+}
+
+userdef_est_init_param<-function(object, pheY, pheX, pheT, options=list())
+{
+	return( object@est.fun( object, pheY, pheX, pheT, options) )
+}
+
+##-----------------------------------------------------------
+## S4 class: 
+##           fg.curve.userdef
+##-----------------------------------------------------------
+
+setClass("fg.curve.userdef",
+	representation(
+	param.name = "character", 
+	fun = "function",
+	formula = "character",
+	simu.param = "list", 
+	est.fun = "function" ), 
+	contains = "fg.curve.base"
+)
+
+setMethod("get_curve",  signature( object = "fg.curve.userdef" ), userdef_get_cueve )
+
+setMethod("get_param_info",  signature( object = "fg.curve.userdef" ), userdef_get_param_info )
+
+setMethod("check_param",  signature( object = "fg.curve.userdef" ), userdef_check_param )
+
+setMethod("get_simu_param", signature( object = "fg.curve.userdef"), userdef_get_simu_param)
+
+setMethod("est_init_param", signature( object = "fg.curve.userdef"), userdef_est_init_param)
+
 
 ##-----------------------------------------------------------
 ## Logistic curve
@@ -771,3 +888,5 @@ setMethod("check_param",  signature( object = "fg.curve.ChapmanRichard" ), cr_ch
 setMethod("get_simu_param", signature( object = "fg.curve.ChapmanRichard"), cr_get_simu_param)
 
 setMethod("est_init_param", signature( object = "fg.curve.ChapmanRichard"), cr_est_init_param)
+
+

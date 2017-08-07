@@ -86,7 +86,8 @@ BC.get_simu_qtl<-function( simu_N, lmarker, rmarker, qtl.pos, lmarker.pos, rmark
 	qtl<-array(0, dim=c( simu_N ))
 	for (i in 1:simu_N)
 	{
-		qtl[i] <- ( runif(1)>allprob[i] ) + 1;
+		#return 0 or 1
+		qtl[i] <- ( runif(1)>allprob[i] );
 	}
 
 	return(qtl);
@@ -223,7 +224,8 @@ F2.get_simu_qtl<-function( simu_N, lmarker, rmarker, qtl.pos, lmarker.pos, rmark
 	for (i in 1:simu_N)
 	{
 		qtl_prob <- cumsum( allprob[i,] );
-		qtl[i] <- min( which(runif(1) < qtl_prob )  )  ;
+		#return 0/1/2
+		qtl[i] <- min( which(runif(1) < qtl_prob )  ) - 1  ;
 	}
 
 	return(qtl);
@@ -340,9 +342,9 @@ RIL.get_simu_qtl<-function( simu_N, lmarker, rmarker, qtl.pos, lmarker.pos, rmar
 
 	for (i in 1:simu_N)
 	{
-		# 1: homozygote(qq)
-		# 3: homozygote+additive(QQ)
-		qtl[i] <- ( runif(1)>allprob[i] ) *2 +1 ;
+		# 0: homozygote(qq)
+		# 2: homozygote+additive(QQ)
+		qtl[i] <- ( runif(1)>allprob[i] ) *2  ;
 	}
 
 	return(qtl);

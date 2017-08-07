@@ -19,6 +19,7 @@ export(FM2.permutation)
 export(FM2.select.qtl)
 export(FM2.get.curve)
 export(FM2.get.covariance)
+export(FM2.register.curve)
 
 S3method(print, FM2.dat)
 S3method(summary, FM2.dat)

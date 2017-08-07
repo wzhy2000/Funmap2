@@ -12,6 +12,8 @@ FM2.load.data( pheno.csv, time.csv, geno.csv, marker.csv, cross.type,
     curve.type = NULL, 
     covar.type = NULL, 
     pdf.file = NULL, 
+    covariate.csv = NULL,
+    intercept = FALSE,
     log = FALSE ) 
 }
 
@@ -25,7 +27,9 @@ FM2.load.data( pheno.csv, time.csv, geno.csv, marker.csv, cross.type,
 \item{curve.type}{string indicating the curve type, optional values are "auto", "Logistic", "Exponential", "Power", "Legendre2", .., the full list of curve is described in the details section of \code{\link{FM2.get.curve}}. . 'auto' or NULL force the function to do curve fitting by calling \code{\link{FM2.estimate.data}}}
 \item{covar.type}{string indicating the covariance type, including "auto", "AR1", "SAD1", "ARMA", "CS", .., the full list of covariance structure is described in the details section of \code{\link{FM2.get.covariance}}. 'auto' or NULL force the function to estimate the covariance structure by calling \code{\link{FM2.estimate.data}}}
 \item{pdf.file}{string variable suggesting a PDF file name to illustrate the performance of curve fitting.}
-\item{log}{boolean variable indicating whether logarithm is applied to the phenotype data.}
+\item{covariate.csv}{a CSV file of covariate values for each individuals. The format is described in the details section of \code{\link{FM2.load.data}}. Use NULL if no covariate file.}
+\item{intercept}{boolean value indicating whether intercept is used in the statistical model.}
+\item{log}{boolean value indicating whether logarithm is applied to the phenotype data.}
 }
 
 \value{
@@ -87,6 +91,7 @@ List of 6
   ..$ pheY         : num [1:78, 1:11] 1.3 2.1 1 1.7 1.2 1.1 0.9 1 1.8 2.4 ...
   ..$ pheX         : NULL
   ..$ pheT         : int [1:78, 1:11] 1 1 1 1 1 1 1 1 1 1 ...
+  ..$ est.covariate:NULL
   ..$ est.covar    :List of 2
   ..$ est.curve    :List of 7
   ..$ summary.curve:List of 5
@@ -121,11 +126,11 @@ The first column is individual ID and the rest columns are sample data
 for every measurement. It looks like the following file.
 
 \preformatted{
-ID.	1st	2nd	3rd	4th	5th	6th	7th
-1	2.9033	4.118	6.1495	7.8161	9.8379	12.963	14.918
-2	4.3306	5.3783	7.0647	9.3624	11.439	NA	15.701
-3	2.3997	4.052	5.5431	7.6933	9.8471	NA	12.849
-4	3.3044	4.154	5.8924	7.7133	9.2144	10.945	NA
+ID,	1st,	2nd,	3rd,	4th,	5th,	6th,	7th
+1,	2.9033,	4.118,	6.1495,	7.8161,	9.8379,	12.963,	14.918
+2,	4.3306,	5.3783,	7.0647,	9.3624,	11.439,	NA,	15.701
+3,	2.3997,	4.052,	5.5431,	7.6933,	9.8471,	NA,	12.849
+4,	3.3044,	4.154,	5.8924,	7.7133,	9.2144,	10.945,	NA
 ...
 }
 
@@ -136,40 +141,56 @@ The first column is individual ID and the rest columns are sample data
 for each measurement. It looks like the following file.
 
 \preformatted{
-ID.	1st	2nd	3rd	4th	5th	6th	7th
-1	1	2	3	4	5	6	7
-2	1	2	3	4	5	NA	7
-3	1	2	3	4	5	NA	7
-4	1	2	3	4	5	6	NA
+ID,	1st,	2nd,	3rd,	4th,	5th,	6th,	7th
+1,	1,	2,	3,	4,	5,	6,	7
+2,	1,	2,	3,	4,	5,	NA,	7
+3,	1,	2,	3,	4,	5,	NA,	7
+4,	1,	2,	3,	4,	5,	6,	NA
 ...
 }
 
 
-3) \bold{The genotype file.}
+3) \bold{The covariate file.}\cr
+The first column is individual ID and the rest columns are covariate items.
+It looks like the following file.
+
+\preformatted{
+ID,	X1,	X2,	X3	
+1,	1,	0.1,	0.45	
+2,	2,	1.3,	0.67	
+3,	1,	2.0,	0.41	
+4,	2,	2.1,	0.94	
+...
+}
+
+Please note no missing data is allowed in this file.
+
+
+4) \bold{The genotype file.}
 The first column is individual ID and the rest columns are 
 genotype data for each marker. An example is shown in the following table.
 Three genotypes (aa=0, Aa=1, AA=2) and missing data(coded as NA or -1)
 are valid maker values.
 
 \preformatted{
-ID.	marker1	marker2	marker3	marker4	marker5	marker6
-1	1	1	0	1	NA	0
-2	1	1	1	1	0	0
-3	1	1	1	0	1	1
+ID,	marker1,marker2,marker3,marker4,marker5,marker6
+1,	1,	1,	0,	1,	NA,	0
+2,	1,	1,	1,	1,	0,	0
+3,	1,	1,	1,	0,	1,	1
 ...
 }
 
-4) \bold{The marker list file.}
+5) \bold{The marker list file.}
 The first column is marker's ID, the rest columns are the marker's name,
 distance, group index, and group name for every marker.In the marker file,
 the distance field is a distance (in cM) in one chromosome or linkage group. 
 The header row should be included.
 
 \preformatted{
-id	Marker	Dist.	Grp_idx	Group
-1	marker1	0	1	G1
-2	marker2	20	1	G1
-3	marker3	40	1	G1
+id,	Marker,	Dist,	Grp_idx,Group
+1,	marker1,0,	1,	G1
+2,	marker2,20,	1,	G1
+3,	marker3,40,	1,	G1
 ...
 }
 
@@ -187,6 +208,7 @@ file.marker.csv <- system.file("extdata","populus.BC.marker.csv", package="Funma
 dat <- FM2.load.data( file.pheno.csv, NULL, file.geno.csv, file.marker.csv, "BC",
     curve.type="auto", 
     covar.type="auto",
+    intercept=F,
     pdf.file="FM2.test.load.pdf");
 
 str( dat );

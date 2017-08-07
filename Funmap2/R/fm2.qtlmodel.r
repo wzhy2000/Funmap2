@@ -38,12 +38,12 @@ Qtlmle.qtlscan<-function( dat, qtl.table=NULL, grp_idx=NULL, options=list(scan.s
 			else
 			{
 				lr2 <- 2*( ltest$h0$value - ltest$h1$value );
-				grp.res[[nQtl]] <- c( grp = qtl.table.i[nQtl,1], 
-							pos =qtl.table.i[nQtl,5], 
-							LR  =lr2, 
-							H1  =ltest$h1$value, 
-							H0  = ltest$h0$value, 
-							ltest$h1$par, 
+				grp.res[[nQtl]] <- c( grp = qtl.table.i[nQtl,1],
+							pos =qtl.table.i[nQtl,5],
+							LR  =lr2,
+							H1  =ltest$h1$value,
+							H0  = ltest$h0$value,
+							ltest$h1$par,
 							ltest$h0$par );
 				h0 <- ltest$h0;
 			}
@@ -60,7 +60,7 @@ Qtlmle.qtlscan<-function( dat, qtl.table=NULL, grp_idx=NULL, options=list(scan.s
 	}, mc.cores=n.cores );
 
 	task_stop("The hypothesis test is done\n");
-	
+
 	res <- do.call("rbind", res.list);
 
 	ret<-list(
@@ -71,7 +71,7 @@ Qtlmle.qtlscan<-function( dat, qtl.table=NULL, grp_idx=NULL, options=list(scan.s
 			covar.type= dat$obj.covar@type,
 			curve.type= dat$obj.curve@type,
 			full.res  = res);
-	
+
 	ret = fin.qtl_locate( ret, peak.count = .RR("peak.count", 5 ) );
 	return( ret );
 }
@@ -88,10 +88,10 @@ Qtlmle.get_est_LR2<-function( dat, par.cross, h0=NULL )
 
 	if ( length(missing) > 0)
 	{
-		flank_snps <- flank_snps[ -(missing), ];
-		pheY <- pheY[ -(missing), ];
-		pheT <- pheT[ -(missing), ];
-		if(!is.null(pheX)) pheX <- pheX[ -(missing), ];
+		flank_snps <- flank_snps[ -(missing),,drop=F ];
+		pheY <- pheY[ -(missing),,drop=F ];
+		pheT <- pheT[ -(missing),,drop=F ];
+		if(!is.null(pheX)) pheX <- pheX[ -(missing),,drop=F];
 	}
 
 	# probability table for QQ,Qq,qq at markers MiMjNiNj;
@@ -106,15 +106,17 @@ Qtlmle.get_est_LR2<-function( dat, par.cross, h0=NULL )
 	n.par.cov <- get_param_info(dat$obj.covar, pheT )$count;
 	n.par.curve <- get_param_info(dat$obj.curve, pheT )$count;
 	nna.vec <- get_non_na_number(pheY);
-	options<-list(max.loop=4);
+	options <- list(max.loop=4, min.time=min(dat$obj.phe$pheT, na.rm=T), max.time=max(dat$obj.phe$pheT, na.rm=T) );
 
 	if ( is.null( h0) )
 	{
-		parin.x <- c()
+		parin.x <- dat$obj.phe$est.curve$parX;
 		parin.curve <- dat$obj.phe$est.curve$param;
 		parin.covar <- dat$obj.phe$est.covar$param;
 		names(parin.curve) <- paste("H0_", get_param_info(dat$obj.curve, pheT )$names, sep="");
 		names(parin.covar) <- paste("H0_", get_param_info(dat$obj.covar, pheT )$names, sep="");
+		if(!is.null(parin.x))
+			names(parin.x) <- paste("H0_", colnames(pheX), sep="");
 
 		h0 <-  optim_BFGS ( parin.x, parin.curve, parin.covar,
 					  Qtlmle.H0, pheY = pheY, pheT = pheT, pheX = pheX,
@@ -123,7 +125,7 @@ Qtlmle.get_est_LR2<-function( dat, par.cross, h0=NULL )
 
 		if ( is.null(h0) )
 			return(list(error=TRUE));
-		
+
 		if(!is.null(h0) && !is.null(h0$par) )
 			names(h0$par) <- c( names(parin.x), names(parin.curve), names(parin.covar) )
 	}
@@ -141,15 +143,18 @@ Qtlmle.get_est_LR2<-function( dat, par.cross, h0=NULL )
 	for(i in 1:n.gentype)
 		names.curve <- c(names.curve, paste( "H1", get_param_info(dat$obj.curve, pheT )$names, i-1, sep="_"));
 	names(parin.covar) <- paste("H1", get_param_info(dat$obj.covar, pheT )$names, sep="_");
+	if(!is.null(parin.x))
+		names(parin.x) <- paste("H1_", colnames(pheX), sep="");
+
 
 	h1 <-  optim_BFGS ( parin.x, parin.curve, parin.covar,
 					  Qtlmle.H1,  qtl.prob = allprob, pheY = pheY, pheT = pheT, pheX = pheX,
 					  obj.curve = dat$obj.curve, obj.covar = dat$obj.covar,
 					  nna.vec=nna.vec, n.par.curve=n.par.curve, options=options );
-	
+
 	if(!is.null(h1) && !is.null(h1$par) )
 		names(h1$par) <- c( names(parin.x), names.curve, names(parin.covar) )
-	
+
 	return(list(h0=h0, h1=h1, error=ifelse ( !is.null(h1), FALSE, TRUE )));
 }
 
@@ -167,7 +172,7 @@ Qtlmle.H0<-function( parin, pheY, pheT, pheX, obj.curve, obj.covar , nna.vec, n.
 	mat.cov <- get_matrix( obj.covar, parin.covar, pheT );
 
 	if(!is.null(pheX))
-		X  <- matrix( rep(  pheX %*% parin.X , NCOL(pheY) ), byrow=F, ncol=NCOL(pheY) )
+		X  <- ( pheX %*% parin.X ) %*% t(rep(1,NCOL(pheY)))
 	else
 		X  <- 0;
 
@@ -201,7 +206,7 @@ Qtlmle.H1<-function( parin, qtl.prob, pheY, pheT, pheX, obj.curve, obj.covar, nn
 		parin.curve  <- parin.curve[-c(1:n.par.curve)];
 
 		if(!is.null(pheX))
-			X  <- matrix( rep(  pheX %*% parin.X , NCOL(pheY) ), byrow=F, ncol=NCOL(pheY) )
+			X  <-  ( pheX %*% parin.X ) %*% t(rep(1,NCOL(pheY)))
 		else
 			X  <- 0;
 
@@ -264,8 +269,8 @@ fin.qtl_locate <- function( res, pvalue=NULL, cutoff=NULL, peak.count=NULL)
 	{
 		warning("No QTL result.");
 		return( res );
-	}	
-	
+	}
+
 	res$full.res <- full.res;
 	peaks.candidate <- fin.select_peaks_by_simple_way( full.res[,3] );
 	if ( length(peaks.candidate) <= 0 )
@@ -288,7 +293,7 @@ fin.qtl_locate <- function( res, pvalue=NULL, cutoff=NULL, peak.count=NULL)
 					break;
 			}
 		}
-	
+
 		res$threshold.type <- "count";
 		res$threshold <- peak.count;
 	}
@@ -298,7 +303,7 @@ fin.qtl_locate <- function( res, pvalue=NULL, cutoff=NULL, peak.count=NULL)
 		res$threshold.type <- "LR";
 		res$threshold <- cutoff;
 	}
-	
+
 	if (!is.null(pvalue) && !is.null( res$obj.permu) )
 	{
 		pv.table <- res$obj.permu$full.res;
@@ -313,17 +318,17 @@ fin.qtl_locate <- function( res, pvalue=NULL, cutoff=NULL, peak.count=NULL)
 			warning("pvalue is too small and no exact cutoff in the permutation results.")
 			idx <- 1;
 		}
-		
+
 		cutoff <- sort(pv.table[,3], decreasing=TRUE)[idx];
 		res$threshold.type <- "pvalue";
 		res$threshold <- pvalue;
 	}
-		
+
 	if(!is.null(cutoff))
 	{
 		peaks.idx <- peaks.candidate [ full.res[peaks.candidate,3] > cutoff ]
 	}
-	
+
 	res$qtl.peaks <- peaks.idx;
 	return (res );
 }
@@ -355,13 +360,13 @@ Qtlmle.summary <- function( res )
 	str3 <- sprintf("%15s: %s=%f\n", 	 "QTL criterion", res$threshold.type, res$threshold);
 	str  <- paste(str, str0, str1, str2, "\n", str3, sep="");
 
-	st0 <- sprintf("\n\tIndex.\tGrp\tPos.\tLR" )
+	st0 <- sprintf("\nIndex \t Grp\t Pos.\t LR" )
 	str <- paste(str, st0, sep="");
 	if(length(res$qtl.peaks)>0)
 	{
 		for(i in res$qtl.peaks)
 		{
-			st0 <- sprintf("%d\t%d\t%8.1f\t%8.3f", i, res$full.res[i,1], res$full.res[i,2], res$full.res[i,3] ) ;
+			st0 <- sprintf("%d\t%d\t%4.1f\t%4.3f", i, res$full.res[i,1], res$full.res[i,2], res$full.res[i,3] ) ;
 			str <- paste(str, st0, sep="\n");
 		}
 	}
@@ -395,15 +400,15 @@ Qtlmle.plot<-function( res, plot_type=NULL, pdf_file=NULL  )
 	  		cutoff.05 <- fin.find_cutoff(res$obj.permu, 0.05);
 	  		cutoff.01 <- fin.find_cutoff(res$obj.permu, 0.01);
 	  	}
-		
+
 		grp.idx <- unique(res$full.res[,1]);
 		marker.table <- res$obj.gen$marker.table[ res$obj.gen$marker.table$grp_idx %in% grp.idx,,drop=F]
-		
+
 	  	err.fig<-try ( fpt.plot_qtl_map( res$full.res, marker.table, cutoff.05=cutoff.05, cutoff.01=cutoff.01  ) );
 		if (class(err.fig)!="try-error")
 			title("The LR profile");
 	}
-	
+
 	if( is.null(plot_type) || plot_type==2 )
 	{
 		if( length(res$qtl.peaks) <= 0)
@@ -443,10 +448,10 @@ Qtlmle.plot<-function( res, plot_type=NULL, pdf_file=NULL  )
 	{
 		if(!is.null(res$obj.permu))
 			fpt.plot_permutation (res$obj.permu$pv.table )
-		else	
+		else
 			cat("No permutation data for the plot.\n");
 	}
-	
+
 	if (!is.null(pdf_file))
 	{
 		cat( "*The results of QTL mapping are saved to ", pdf_file, ".\n" );
