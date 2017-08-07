@@ -38,11 +38,11 @@ This function returns a S3 object with the class label of \code{FM2.dat} which s
 \item{obj.cross}{the cross object.}
 \item{obj.curve}{the curve object.}
 \item{obj.covar}{the covariance structure(object).}
-\item{obj.gen}{the genotype data, including \code{geno.csv}, \code{marker.csv}, \code{marker.obj}, \code{marker.table}, \code{genos.matrix} .}
-\item{obj.phe}{the phenotype list, each item is explained in below section.}
+\item{obj.gen}{the genotype data object, including \code{geno.csv}, \code{marker.csv}, \code{marker.obj}, \code{marker.table}, \code{genos.matrix} .}
+\item{obj.phe}{the phenotype data object, each item is explained in below section.}
 \item{obj.phe$pheno.csv}{the phenotype file.} 
 \item{obj.phe$time.csv}{the measured time file.}
-\item{obj.phe$sample.obs}{sample size} 
+\item{obj.phe$sample.obs}{the sample size} 
 \item{obj.phe$sample.times}{the measure times}
 \item{obj.phe$log}{boolean value indicating whether log function is applied to the phenotype data}
 \item{obj.phe$pheY}{matrix, longitudinal phenotype traits}
@@ -51,7 +51,7 @@ This function returns a S3 object with the class label of \code{FM2.dat} which s
 \item{obj.phe$est.covar}{the estimation for covariance structure obtained from the call of \code{\link{FM2.estimate.data}}.}
 \item{obj.phe$est.curve}{the estimation for curve object obtained from the call of \code{\link{FM2.estimate.data}}.}
 \item{obj.phe$summary.curve}{the curve fitting results for all selected curves, if \code{curve.type} is NULL or 'auto', all available curves are estimated.}
-\item{sobj.phe$ummary.covar}{the results of covariance estimation for all selected covariances, if \code{covar.type} is NULL or 'auto', all available covariances are estimated.}
+\item{sobj.phe$ummary.covar}{the results of covariance estimation for all selected covariances, if \code{covar.type} is NULL or 'auto', all available covariance matrices are estimated.}
 
 }
 
@@ -60,7 +60,7 @@ This function returns a S3 object with the class label of \code{FM2.dat} which s
 
 The function returns a data object,which the structure is same as the simulation data, 
 You can use \code{print} or \code{str} command to check the details in the data object.
-The following conents are exported by \code{str} command
+The following example are exported by \code{str} command
 
 
 \preformatted{
@@ -119,7 +119,7 @@ List of 6
 }
 
 
-The phenotype file, measured time file,  genotype file and marker definition file must be a CSV file. The following sections illustrate the format of each data file.
+The phenotype file, measured time file,  genotype file and marker definition file must be a CSV file. The following example illustrate the format of each data file.
 
 1) \bold{The phenotype file.}\cr
 The first column is individual ID and the rest columns are sample data 
@@ -170,7 +170,7 @@ Please note no missing data is allowed in this file.
 The first column is individual ID and the rest columns are 
 genotype data for each marker. An example is shown in the following table.
 Three genotypes (aa=0, Aa=1, AA=2) and missing data(coded as NA or -1)
-are valid maker values.
+are valid maker values. For example:
 
 \preformatted{
 ID,	marker1,marker2,marker3,marker4,marker5,marker6
@@ -184,7 +184,7 @@ ID,	marker1,marker2,marker3,marker4,marker5,marker6
 The first column is marker's ID, the rest columns are the marker's name,
 distance, group index, and group name for every marker.In the marker file,
 the distance field is a distance (in cM) in one chromosome or linkage group. 
-The header row should be included.
+The header row should be included. For example:
 
 \preformatted{
 id,	Marker,	Dist,	Grp_idx,Group
@@ -198,22 +198,34 @@ id,	Marker,	Dist,	Grp_idx,Group
 
 \examples{
 
-# Load the pre-installed data for this example
+# get the file name of the pre-installed data 
 file.pheno.csv <- system.file("extdata","populus.BC.pheno.csv", package="Funmap2")
 file.geno.csv <- system.file("extdata","populus.BC.geno.csv", package="Funmap2")
 file.marker.csv <- system.file("extdata","populus.BC.marker.csv", package="Funmap2")
 
-# Call the pipeline without permutation.
-# Can't select QTL using pvalue due to the missing of permutation result.
+# Load the data files and estimate the curve and covariate structure.
 dat <- FM2.load.data( file.pheno.csv, NULL, file.geno.csv, file.marker.csv, "BC",
     curve.type="auto", 
     covar.type="auto",
-    intercept=F,
+    intercept=FALSE,
     pdf.file="FM2.test.load.pdf");
 
 str( dat );
 print( dat );
-plot( dat, pdf.file="test.FM2.load.data.pdf")
+# plot all curves and genome data.
+plot( dat, pdf.file="test.FM2.data.pdf")
+
+
+# try to contain the intercept in the statistical model, set TRUE for 'intercept'.  
+dat <- FM2.load.data( file.pheno.csv, NULL, file.geno.csv, file.marker.csv, "BC",
+    curve.type="auto", 
+    covar.type="SAD1",
+    intercept=TRUE,
+    pdf.file="FM2.test.load2.pdf");
+
+str( dat );
+print( dat );
+plot( dat, pdf.file="test.FM2.data2.pdf")
 
 }
 

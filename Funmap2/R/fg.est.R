@@ -501,12 +501,12 @@ fg_fit_curve<-function( pheY, pheX, pheT, curve.type="auto", file.plot.pdf=NULL 
 
 	        par_X <- NULL;
 	        par_c <- r$par;
-	        mu_X <- rep(0, NROW(pheY))
+	        mu_X <- rep(0, NCOL(pheY))
 	        if ( !is.null(pheX) )
 	   	    {
 				par_X <- par_c[ 1:NCOL(pheX)];
 				par_c <- par_c[-c(1:NCOL(pheX))];
-				mu_X <- mean( pheX %*% par_X, na.rm=T );
+				mu_X  <- mean( pheX %*% par_X, na.rm=T );
 			}
 
 	        ti <- seq( min(pheT, na.rm=T), max(pheT, na.rm=T), 1);

@@ -41,7 +41,7 @@ Here we explain the updated results only in the item of \code{obj.perm}, a S3 ob
 \details{
 If permutation count is greater than 100, more precise cutoff will be obtained.
 For example, 10000 times permutation can give the significance table which
-looks like the following table.
+looks like a table, for example:
 
 \tabular{rrrrrrrrr}{
 0.9\tab0.8\tab0.7\tab0.6\tab0.5\tab0.4\tab0.3\tab0.2\tab0.1\cr
@@ -50,10 +50,10 @@ looks like the following table.
 0.0009\tab0.0008\tab0.0007\tab0.0006\tab0.0005\tab0.0004\tab0.0003\tab0.0002\tab0.0001\cr
 }
 
-If clusters or multiple CPU cores are available, the permutaion can use \strong{snowfall} package to do parallel computation.
+If clusters or multiple CPU cores are available, the permutaion can use \strong{parallel} package to do parallel computation.
 In order to do that, the following is necessary.
 
-1) \strong{snowfall} is installed.\cr
+1) \strong{parallel} is used to do parallel computing.\cr
 
 2) The cluster count should be specified in the \code{options} parameter\cr
 
@@ -62,11 +62,15 @@ e.g. \code{options=list(n.cores=10)}
 }
 
 \examples{
+
+# simulate the data, inclueding phenotype object and genotype object
 dat <- FM2.simulate();
+# QTL scaning.
 ret <- FM2.qtlscan(dat);
+# permutation
 ret <- FM2.permutation(dat, ret, options=list(n.cores=10, permu.filter.ratio = 0.02, scan.step=2));
 
-# only print the permutation part in the result object
+# only print the permutation part in the result object.
 show(ret$obj.permu);
 
 # draw cutoff curve based on permutation results.

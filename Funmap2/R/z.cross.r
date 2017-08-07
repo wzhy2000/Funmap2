@@ -505,7 +505,7 @@ NP1.get_init_rand<-function(dat)
 	return(list(p=p,q=q,D=D));
 }
 
-NP1.get_est_param<-function( dat, par.cross, par.covar, par.curve, obj.curve)
+NP1.get_est_param<-function( dat, par.cross, par.covar, par.curve, obj.curve, obj.covar)
 {
 	if (!SM.covar$is_valid(par.covar))
 		return(NaN);
@@ -513,8 +513,8 @@ NP1.get_est_param<-function( dat, par.cross, par.covar, par.curve, obj.curve)
 	qtl.prob <- NP1.get_qtl_prob( dat$obj.gen$genos.matrix[,1], NULL, 0, 0, par.cross);
 	time.std <- dat$obj.phe$sample_times;
 	y <- as.matrix( dat$obj.phe$pheY );
-	sig.inv <- FM.covar$get_inv_mat(par.covar, dat$obj.phe$sample_times, FM.curve$trait_num);
-	sig.det <- FM.covar$get_mat_det(par.covar, dat$obj.phe$sample_times, FM.curve$trait_num);
+	sig.inv <- get_inv_mat(obj.covar, par.covar, dat$obj.phe$sample_times, obj.curve$trait_num);
+	sig.det <- covarget_mat_det(obj.covar, par.covar, dat$obj.phe$sample_times, obj.curve$trait_num);
 
 	marker <- dat$obj.gen$genos.matrix[,1];
 	nn <- nrow(y);
