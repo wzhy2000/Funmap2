@@ -26,7 +26,7 @@ The Funmap2 package is developed to identify quantitative trait loci (QTL) for a
 
 Please install the required R package before you install Funmap2 package. After the  installation of `mvtnorm`, please install the **Funmap2** as following steps.
 
-### Install Funmap2 on LUNIX or Mac OSX
+### Install Funmap2 on LINUX or Mac OSX
 
 ```
 git clone https://github.com/wzhy2000/Funmap2.git
@@ -45,7 +45,7 @@ R CMD INSTALL Funmap2
 
 3) Install the package in R GUI by selecting the menu "Packages|Install package(s) from local zip files..."
 
-##Usage instructions##
+## Usage Instructions
 
 Funmap2 is an R package which provides:
 
