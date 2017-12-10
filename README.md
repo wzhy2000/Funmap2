@@ -45,6 +45,10 @@ R CMD INSTALL Funmap2
 
 3) Install the package in R GUI by selecting the menu "Packages|Install package(s) from local zip files..."
 
+## Workflow
+
+![Hi](https://github.com/wzhy2000/Funmap2/raw/master/Funmap2-workflow.png?v=4&s=200 "Funmap2 workflow")
+
 ## Usage Instructions
 
 Funmap2 is an R package which provides:
