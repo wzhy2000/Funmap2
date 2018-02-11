@@ -34,16 +34,29 @@ Please install the required R package before you install Funmap2 package. After 
 
 ### Install Funmap2 on LINUX or Mac OSX
 
+> 1. use install_github function in R console
+
+```
+library("devtools");
+install_github("wzhy2000/fGWAS/pkg")
+```
+> 2. use R command in a command window
+
 ```
 git clone https://github.com/wzhy2000/Funmap2.git
-
 cd Funmap2
-
 R CMD INSTALL Funmap2
-
 ```
 
 ### Install Funmap2 on Windows
+
+> 1. use install_github function in R console
+
+```
+library("devtools");
+install_github("wzhy2000/fGWAS/pkg")
+```
+> 2. use the menu "Packages|Install package"
 
 1) Please download windows package from (https://github.com/wzhy2000/Funmap2/raw/master/windows/Funmap2.ver2.4.win.zip)
 
