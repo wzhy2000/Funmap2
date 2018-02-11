@@ -38,7 +38,7 @@ Please install the required R package before you install Funmap2 package. After 
 
 ```
 library("devtools");
-install_github("wzhy2000/fGWAS/pkg")
+install_github("wzhy2000/Funmap2/Funmap2")
 ```
 > 2. use R command in a command window
 
@@ -54,7 +54,7 @@ R CMD INSTALL Funmap2
 
 ```
 library("devtools");
-install_github("wzhy2000/fGWAS/pkg")
+install_github("wzhy2000/Funmap2/Funmap2")
 ```
 > 2. use the menu "Packages|Install package"
 
