@@ -2,6 +2,8 @@
 
 Functional Mapping Package, is an R program that performs QTL mapping between a set of markers and a longitudinal quantitative trait in population samples. 
 
+The package has been moved from http://statgen.psu.edu/software/funmap.html to here.
+
 # Reference
 
 [1] Ma, C. X., G. Casella, and R. L. Wu, 2003. Functional mapping of quantitative trait loci underlying the character process: A theoretical framework. Genetics 161(4): 1751-1762.
