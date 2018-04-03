@@ -13,7 +13,7 @@ permu.execute<-function( dat, grp.idx=NULL, permu.loop, filter.ratio=1, scan.ste
 {
 	if( filter.ratio<1 && is.null(dat$obj.phe$pheX) )
 		dat$clustering <- permu.cluster(dat);
-	
+
 	#p0 <- task_start("Execute the permutation, nCount=", permu.loop, "...\n");
 
 	cpu.fun <- function(i)
@@ -24,7 +24,7 @@ permu.execute<-function( dat, grp.idx=NULL, permu.loop, filter.ratio=1, scan.ste
 		dat0$obj.phe$pheX <- dat0$obj.phe$pheX[new_index, ];
 		dat0$obj.phe$pheT <- dat0$obj.phe$pheT[new_index, ];
 		dat0$clustering$Q <- dat0$clustering$Q[new_index, ];
-		
+
 		qtl_table <- NULL;
 		if( filter.ratio<1 && is.null(dat$obj.phe$pheX) )
 			qtl_table <- permu.qtlfilter( dat0, grp.idx, filter.ratio, scan.step );
@@ -124,11 +124,11 @@ permu.plot<-function( object, file.pdf =NULL )
 
 	fpt.plot_permutation ( object$pv.table );
 
-	if(!is.null(file.pdf)) 
+	if(!is.null(file.pdf))
 	{
 		dev.off();
 		cat( "* The permutation cutoff are shown to ", file.pdf, ".\n");
-	}	
+	}
 
 	invisible();
 }
@@ -150,7 +150,7 @@ fin.find_cutoff <- function(perm, p=0.05)
 			warning("pvalue is too small and no exact cutoff in the permutation results.")
 			idx <- 1;
 		}
-					
+
 		perm.cutoff <- sort(pv.table[,3], decreasing=TRUE)[idx];
 	}
 
@@ -339,6 +339,8 @@ permu.cluster <- function( dat )
 	n.grp     <- dat$obj.cross$gen_num;
 	n.par.cov <- get_param_info( dat$obj.covar, dat$obj.phe$pheT)$count;
 	n.par.curve <- get_param_info(dat$obj.curve, dat$obj.phe$pheT)$count;
+	t.range   <- range(dat$obj.phe$pheT, na.rm=TRUE);
+	options   <- list(max.time=t.range[2], min.time=t.range[1]);
 
 	mle <- function(par, W, pheY, pheT, pheX, obj.curve, obj.covar, obj.cross, optim=T)
 	{
@@ -356,15 +358,15 @@ permu.cluster <- function( dat )
 		L <- matrix(NA, ncol=n.grp, nrow=NROW(pheY));
 		if (obj.cross$gen_QQ)
 		{
-			y.delt <- pheY- get_curve( obj.curve, par.m[i,], pheT  );
-			Q[,i] <- dmvnorm_fast( y.delt, rep(0, n.par.cov), cov, log=F);
+			y.delt <- pheY- get_curve( obj.curve, par.m[i,], pheT, options  );
+			Q[,i] <- dmvnorm_fast( y.delt, rep(0, NCOL(y.delt)), cov, log=F);
 			L[,i] <- Q[,i]*W[i]
 			i <- i+1;
 		}
 
 		if (obj.cross$gen_Qq)
 		{
-			y.delt <- pheY- get_curve( obj.curve, par.m[i,], pheT  );
+			y.delt <- pheY- get_curve( obj.curve, par.m[i,], pheT, options  );
 			Q[,i] <- dmvnorm_fast( y.delt, rep(0, NCOL(y.delt)), cov, log=F);
 			L[,i] <- Q[,i]*W[i]
 			i <- i+1;
@@ -372,7 +374,7 @@ permu.cluster <- function( dat )
 
 		if (obj.cross$gen_qq)
 		{
-			y.delt <- pheY- get_curve( obj.curve, par.m[i,], pheT  );
+			y.delt <- pheY- get_curve( obj.curve, par.m[i,], pheT, options  );
 			Q[,i] <- dmvnorm_fast( y.delt, rep(0, NCOL(y.delt)), cov, log=F);
 			L[,i] <- Q[,i]*W[i]
 			i <- i+1;
@@ -390,10 +392,10 @@ permu.cluster <- function( dat )
 	while( max(abs( c(W.new) - c(W) ) ) > 1e-5 )
 	{
 		W <- W.new;
-		r <- try( optim( par.new, mle, W=W, pheY=dat$obj.phe$pheY, pheT=dat$obj.phe$pheT, pheX=dat$obj.phe$pheX, 
-			             obj.curve=dat$obj.curve, obj.covar= dat$obj.covar, obj.cross=dat$obj.cross, 
+		r <- try( optim( par.new, mle, W=W, pheY=dat$obj.phe$pheY, pheT=dat$obj.phe$pheT, pheX=dat$obj.phe$pheX,
+			             obj.curve=dat$obj.curve, obj.covar= dat$obj.covar, obj.cross=dat$obj.cross,
 			             optim=T, control = list(maxit=50000)));
-		
+
 		if(class(r)!="try-error" && r$convergence==0)
 		{
 			par.new <- r$par;

@@ -6,6 +6,7 @@ Qtlmle.qtlscan<-function( dat, qtl.table=NULL, grp_idx=NULL, options=list(scan.s
 	# search for all marker for current group(chromosome)
 	if(is.null(qtl.table))
 		qtl.table <- fin.get_qtl( dat$obj.gen$marker.table, scan.step=options$scan.step );
+
 	if(!is.null(grp_idx))
 		qtl.table <- qtl.table[which(qtl.table$grp %in% grp_idx), ]
 
