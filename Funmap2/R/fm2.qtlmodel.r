@@ -33,24 +33,24 @@ Qtlmle.qtlscan<-function( dat, qtl.table=NULL, grp_idx=NULL, options=list(scan.s
 				old_geno_pos <- par.cross$lmarker;
 			}
 
-			ltest <- Qtlmle.get_est_LR2(dat, par.cross, h0 );
+			ltest <- try( Qtlmle.get_est_LR2(dat, par.cross, h0 ) );
 			if (ltest$error)
 				grp.res[[nQtl]] <- c( qtl.table.i[nQtl,1], qtl.table.i[nQtl,5], rep(NA, 5) )
 			else
 			{
 				lr2 <- 2*( ltest$h0$value - ltest$h1$value );
 				grp.res[[nQtl]] <- c( grp = qtl.table.i[nQtl,1],
-							pos =qtl.table.i[nQtl,5],
-							LR  =lr2,
-							H1  =ltest$h1$value,
+							pos = qtl.table.i[nQtl,5],
+							LR  = lr2,
+							H1  = ltest$h1$value,
 							H0  = ltest$h0$value,
 							ltest$h1$par,
 							ltest$h0$par );
 				h0 <- ltest$h0;
 			}
 
-			if(.RR("debug"))
-				cat(nQtl, "\t", qtl.table.i[nQtl,1], "\t", qtl.table.i[nQtl,2], "\t", qtl.table.i[nQtl, 5], "\t", grp.res[[nQtl]][3], "\n");
+			if(.RR("debug", TRUE))
+				cat(nQtl, "\t", grp.res[[nQtl]]$grp, "\t", grp.res[[nQtl]]$pos, "\t", grp.res[[nQtl]]$LR, "\n");
 
 		}
 
@@ -178,7 +178,7 @@ Qtlmle.H0<-function( parin, pheY, pheT, pheX, obj.curve, obj.covar , nna.vec, n.
 		X  <- 0;
 
 	Y.delt <- pheY - get_curve(obj.curve, parin.curve, pheT, options=options ) - X;
-	pv <- try(dmvnorm_fast( Y.delt, rep(0, NCOL(mat.cov)), mat.cov, nna.vec=nna.vec, log=T), .RR("try.silent") );
+	pv <- try(dmvnorm_fast( Y.delt, rep(0, NCOL(mat.cov)), mat.cov, nna.vec=nna.vec, log=T), .RR("try.silent", FALSE) );
 	if ( class(pv)=="try-error" || is.na(pv) )
 			return (NaN);
 
@@ -212,7 +212,7 @@ Qtlmle.H1<-function( parin, qtl.prob, pheY, pheT, pheX, obj.curve, obj.covar, nn
 			X  <- 0;
 
 		Y.delt <- pheY - get_curve(obj.curve, parin.curve0, pheT, options=options ) - X;
-		pv <- try(dmvnorm_fast( Y.delt, rep(0, NCOL(mat.cov)), mat.cov, nna.vec=nna.vec, log=F), .RR("try.silent") );
+		pv <- try(dmvnorm_fast( Y.delt, rep(0, NCOL(mat.cov)), mat.cov, nna.vec=nna.vec, log=F), .RR("try.silent", FALSE) );
 		if ( class(pv)=="try-error" || is.na(pv) )
 			return (NaN);
 

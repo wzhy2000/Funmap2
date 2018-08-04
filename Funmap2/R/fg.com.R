@@ -116,7 +116,7 @@ optim_BFGS<-function ( par.x, par.curve, par.covar, proc_h0, ... )
 	{
 		h0 <- try( optim( parinx, proc_h0, ...,
 					method  = ifelse(mle.control$loop.optim%%2==0, "BFGS", "Nelder-Mead" ),	control = control ),
-					.RR("try.slient") );
+					.RR("try.silent") );
 
 		mle.control$loop.optim <- mle.control$loop.optim + 1;
 		if (class(h0)=="try-error" || any(is.na(h0)) || h0$convergence!=0 )
