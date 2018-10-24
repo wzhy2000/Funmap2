@@ -1,4 +1,4 @@
-# Funmap2 (Version 2.4)
+# Funmap2 (Version 2.4.2)
 
 Functional Mapping Package, is an R program that performs QTL mapping between a set of markers and a longitudinal quantitative trait in population samples. 
 
