@@ -100,5 +100,5 @@ All functions and examples in the Funmap2 are available in the manual (https://g
 
 Sample Report:
 
-Link: https://github.com/wzhy2000/Funmap2/blob/master/demo/report_demo.2.2.pdf
+Link: https://github.com/wzhy2000/Funmap2/blob/master/demo/report_demo.2.4.pdf
 
