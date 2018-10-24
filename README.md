@@ -58,7 +58,7 @@ install_github("wzhy2000/Funmap2/Funmap2")
 ```
 > 2. use the menu "Packages|Install package"
 
-1) Please download windows package from (https://github.com/wzhy2000/Funmap2/raw/master/windows/Funmap2.ver2.4.win.zip)
+1) Please download windows package from (https://github.com/wzhy2000/Funmap2/raw/master/windows/Funmap2.zip)
 
 2) Rename the downloaded package to **Funmap2.zip** (It would be failed if long name package is installed directly)
 
