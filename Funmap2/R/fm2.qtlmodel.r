@@ -421,7 +421,7 @@ Qtlmle.plot<-function( res, plot_type=NULL, pdf_file=NULL  )
 			qtl.info <- res$full.res[ res$qtl.peaks[i], ]
 			err.fig <- try ( fpt.plot_qtl_pos( res$full.res, res$obj.gen$marker.table,  qtl.info[1], qtl.info[2], cutoff.05=cutoff.05, cutoff.01=cutoff.01 ) );
 			if (class(err.fig)!="try-error")
-				title(paste("The LR profile for QTL position(Group:", qtl.info[1], ")", sep="") );
+				title(paste("QTL position(Group:", qtl.info[1], ")", sep="") );
 
 			QQ_par <- qtl.info[paste( "H1", get_param_info(res$obj.curve, res$obj.phe$pheT )$names, 0, sep="_")];
 			Qq_par <- qtl.info[paste( "H1", get_param_info(res$obj.curve, res$obj.phe$pheT )$names, 1, sep="_")];

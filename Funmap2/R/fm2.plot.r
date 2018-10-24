@@ -95,7 +95,7 @@ fpt.plot_qtl_pos<-function( qtl.map.table, marker.table, index, qtl.pos=NULL, cu
 #--------------------------------------------------------------
 fpt.internal_plot_qtl_pos<-function(chr_logs, marker_list=NA, threshold=NA, cutoff.05=NULL, cutoff.01=NULL, qtl_ps=NULL)
 {
-	op <- par(mar=c( 0, 0, 1, 0.2), bty="n" );
+	op <- par(mar=c( 0, 0, 2, 0.2)+1, bty="n" );
 
 	plot( chr_logs[,2], chr_logs[,3], xlim=c( -10, 90), ylim=c(-25, 75),
 			type="n", main="", xlab="", ylab="", xaxt="n", yaxt="n",xaxs="i", yaxs="i");
@@ -199,9 +199,9 @@ fpt.internal_plot_qtl_pos<-function(chr_logs, marker_list=NA, threshold=NA, cuto
 	{
 		x0 <- marker_list[j,2]/(max_xlim - min_xlim)*85;
 		segments( x0, -17, x0, -16);
-		if ( x0 - draw_last_x > strheight(marker_list[j,3], srt=90, cex=0.8) )
+		if ( x0 - draw_last_x > strheight(marker_list[j,1], srt=90, cex=0.8) )
 		{
-			text( x0, -16, marker_list[j,3], adj=c(0,0.5), srt=90, cex=0.8);
+			text( x0, -16, marker_list[j,1], adj=c(0,0.5), srt=90, cex=0.8);
 			draw_last_x <- x0;
 		}
 	}
@@ -244,7 +244,7 @@ fpt.plot_qtl_map<-function( qtl.map.table, marker.table, cutoff.05=NULL, cutoff.
 	if(chr_nums<4) level_cnt <-1;
 
 	chr_logs <- qtl.map.table[, c(1,2,3) ];
-	marker_list<- marker.table[, c("grp_idx", "Dist", "Marker")];
+	marker_list<- marker.table[, c("Marker", "Dist", "grp_idx")];
 
 	fpt.internal_plot_qtl_map( chr_nums, level_cnt, chr_logs, marker_list=marker_list, cutoff.05=cutoff.05, cutoff.01=cutoff.01 );
 }
@@ -375,7 +375,7 @@ fpt.internal_plot_qtl_map<-function(chr_nums, level_cnt, chr_logs, marker_list=N
 
 		#marker
 		sticker_h<- ( max_log*1.3- min_log*0.9)/20;
-		if ( !is.null(marker_list))
+		if ( is.null(marker_list))
 		{
 			for (j in 2:length(ll[,1]) )
 			{
@@ -386,7 +386,7 @@ fpt.internal_plot_qtl_map<-function(chr_nums, level_cnt, chr_logs, marker_list=N
 				y1 <- (min_log*0.9+ sticker_h)*(sub_rc[4]-sub_rc[2])/(ylim.cur[2]-ylim.cur[1]) + sub_rc[2];
 				segments( x0, y0, x1, y1 );
 			}
-    		}
+    	}
 		else
 		{
 			for (j in 1:length(marker_list[,1]) )
@@ -731,7 +731,7 @@ fpt.plot_overlapping_curves<-function( pheY, pheT, pheX=NULL, options=list() )
 #     qq_Par: E0, E50 and Emax for qq type
 #--------------------------------------------------------------
 
-fpt.plot_com_curve<-function( nMesa, nLong, obj.curve, pheY = NULL, pheT=NULL, QQ_par=NULL, Qq_par=NULL, qq_par=NULL, simu_QQ=NULL, simu_Qq=NULL, simu_qq=NULL, xlab="Time", ylab="Model" )
+fpt.plot_com_curve<-function( nMesa, nLong, obj.curve, pheY = NULL, pheT=NULL, QQ_par=NULL, Qq_par=NULL, qq_par=NULL, simu_QQ=NULL, simu_Qq=NULL, simu_qq=NULL, xlab="Time", ylab="Phenotype" )
 {
 	if ( nMesa > nLong)
 	 	nLong <- nMesa + 4;
@@ -746,9 +746,7 @@ fpt.plot_com_curve<-function( nMesa, nLong, obj.curve, pheY = NULL, pheT=NULL, Q
 	if (!is.null(qq_par))
 		limit1 <- max( limit1, get_curve( obj.curve, qq_par, 1:nMesa, options=list(tmin=qq_par[1], tmax=nMesa ) ) );
 
-	op <- par(mar=c(2,3,1,1), bty="o");
-
-
+	op <- par(mar=c(2,3,1,1)+2.5, bty="o");
 	plot(c(1:2), c(1:2),xlim=c(1, nLong+1), ylim=c(0, limit1*1.1),
 		type="n", main="",xlab=xlab, ylab=ylab, xaxt="s", yaxt="s", xaxs="i", yaxs="i", frame=T);
 
@@ -778,7 +776,7 @@ fpt.plot_com_curve<-function( nMesa, nLong, obj.curve, pheY = NULL, pheT=NULL, Q
 
 	if (!is.null(QQ_par))
 	{
-		y20 <- get_curve( obj.curve, QQ_par, x10, options=list(tmin=QQ_par[1], tmax=nMesa) );
+		y20 <- get_curve( obj.curve, QQ_par, x10, options=list(min.time=min(pheT), max.time=max(pheT)) );
 		lines(x10[1:p0],  y20[1:p0], lwd=2, col="darkgreen", lty="solid");
 		lines(x10[p0:p1], y20[p0:p1], lwd=2, col="darkgreen", lty="dotted");
 
@@ -788,7 +786,7 @@ fpt.plot_com_curve<-function( nMesa, nLong, obj.curve, pheY = NULL, pheT=NULL, Q
 
 	if (!is.null(simu_QQ))
 	{
-		y20 <- get_curve( obj.curve, simu_QQ, x10, options=list(tmin=simu_QQ[1], tmax=nMesa)) ;
+		y20 <- get_curve( obj.curve, simu_QQ, x10, options=list(min.time=min(pheT), max.time=max(pheT))) ;
 		lines(x10[1:p0],  y20[1:p0], lwd=2, col="black", lty="dotted");
 		lines(x10[p0:p1], y20[p0:p1], lwd=2, col="black", lty="dotted");
 	}
@@ -796,7 +794,7 @@ fpt.plot_com_curve<-function( nMesa, nLong, obj.curve, pheY = NULL, pheT=NULL, Q
 
 	if (!is.null(Qq_par))
 	{
-		y10 <- get_curve( obj.curve, Qq_par, x10, options=list(tmin=Qq_par[1], tmax=nMesa) );
+		y10 <- get_curve( obj.curve, Qq_par, x10, options=list(min.time=min(pheT), max.time=max(pheT)) );
 		lines(x10[1:p0],  y10[1:p0], lwd=2, col="blue" , lty="solid");
 		lines(x10[p0:p1], y10[p0:p1], lwd=2, col="blue" , lty="dotted");
 
@@ -806,14 +804,14 @@ fpt.plot_com_curve<-function( nMesa, nLong, obj.curve, pheY = NULL, pheT=NULL, Q
 
 	if (!is.null(simu_Qq))
 	{
-		y10 <- get_curve( obj.curve, simu_Qq, x10, options=list(tmin=simu_Qq[1], tmax=nMesa) );
+		y10 <- get_curve( obj.curve, simu_Qq, x10, options=list(min.time=min(pheT), max.time=max(pheT)) );
 		lines(x10[1:p0],  y10[1:p0], lwd=2, col="black", lty="dotted");
 		lines(x10[p0:p1], y10[p0:p1], lwd=2, col="black", lty="dotted");
 	}
 
 	if (!is.null(qq_par))
 	{
-		y00 <- get_curve( obj.curve, qq_par, x10, options=list(tmin=qq_par[1], tmax=nMesa)) ;
+		y00 <- get_curve( obj.curve, qq_par, x10, options=list(min.time=min(pheT), max.time=max(pheT))) ;
 		lines(x10[1:p0],  y00[1:p0], lwd=2, col="red" , lty="solid");
 		lines(x10[p0:p1], y00[p0:p1], lwd=2, col="red" , lty="dotted");
 
@@ -821,10 +819,9 @@ fpt.plot_com_curve<-function( nMesa, nLong, obj.curve, pheY = NULL, pheT=NULL, Q
 		#segments(t2, 0, t2, limit1*1.1, lty="solid");
 	}
 
-
 	if (!is.null(simu_qq))
 	{
-		y00 <- get_curve( obj.curve, simu_qq, x10, options=list(tmin=simu_qq[1], tmax=nMesa));
+		y00 <- get_curve( obj.curve, simu_qq, x10, options=list(min.time=min(pheT), max.time=max(pheT)));
 		lines(x10[1:p0],  y00[1:p0], lwd=2, col="black" , lty="dotted");
 		lines(x10[p0:p1], y00[p0:p1], lwd=2, col="black" , lty="dotted");
 	}
@@ -837,22 +834,25 @@ fpt.plot_com_curve<-function( nMesa, nLong, obj.curve, pheY = NULL, pheT=NULL, Q
 
 	if (!is.null(QQ_par))
 	{
-		sLegend<- c( sLegend, sprintf("(QQ%i):%3.2f,%3.2f,...",2, QQ_par[1], QQ_par[2]) );
+		#sLegend<- c( sLegend, sprintf("(QQ%i):%3.2f,%3.2f,...",2, QQ_par[1], QQ_par[2]) );
+		sLegend<- c( sLegend, "QQ(2)");
 		colors <- c( colors, "darkgreen");
 	}
 	if (!is.null(Qq_par))
 	{
-		sLegend<- c( sLegend, sprintf("(Qq%i):%3.2f,%3.2f,...",1, Qq_par[1], Qq_par[2]) );
+		#sLegend<- c( sLegend, sprintf("(Qq%i):%3.2f,%3.2f,...",1, Qq_par[1], Qq_par[2]) );
+		sLegend<- c( sLegend, "Qq(1)" );
 		colors <- c( colors, "blue");
 	}
 	if (!is.null(qq_par))
 	{
-		sLegend<- c( sLegend, sprintf("(qq%i):%3.2f,%3.2f,...",0, qq_par[1], qq_par[2]) );
+		#sLegend<- c( sLegend, sprintf("(qq%i):%3.2f,%3.2f,...",0, qq_par[1], qq_par[2]) );
+		sLegend<- c( sLegend, "qq(0)" );
 		colors <- c( colors, "red");
 	}
 
 	if (length(sLegend)>0)
-		legend(x="topright", y=NULL, sLegend, cex=0.6, col=colors,  pch=plotchar, lty=1, title="Legend")
+		legend(x="topleft", y=NULL, sLegend, cex=1, col=colors,  pch=plotchar, lty=1, title="Genotype")
 
 	par(op);
 
@@ -868,10 +868,10 @@ fpt.plot_com_curve<-function( nMesa, nLong, obj.curve, pheY = NULL, pheT=NULL, Q
 #--------------------------------------------------------------
 fpt.plot_permutation<-function( pv.table )
 {
-	op <- par(mar=c(2,3,1,1), bty="o");
+	op <- par(mar=c(4,3,1,1)+2, bty="o");
 
 	plot(c(1:2), c(1:2),xlim=c(-6,1), ylim=c(0, max(pv.table[,2]) ),
-		type="n", main="",xlab="p-value", ylab="cutoff", xaxt="n", yaxt="s", xaxs="i", yaxs="i");
+		type="n", main="",xlab="p-value", ylab="Cutoff", xaxt="n", yaxt="s", xaxs="i", yaxs="i");
 
 	title("Permutation result");
 	lines( log10(pv.table[,1]), pv.table[,2], lty=1, col="blue")
@@ -906,7 +906,7 @@ fpt.plot_permutation<-function( pv.table )
 	if (length(legend_left)>0)
 	{
 		str_max <- max(strwidth(str_legend));
-		legend("topright", legend = legend_left,text.width =str_max , title = "Cutoffs");
+		legend("bottomleft", legend = legend_left,text.width =str_max , title = "Cutoffs");
 	}
 
 	par(op);
